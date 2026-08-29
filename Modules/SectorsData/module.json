@@ -1,0 +1,11 @@
+{
+    "name": "SectorsData",
+    "alias": "sectorsdata",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\SectorsData\\Providers\\SectorsDataServiceProvider"
+    ],
+    "files": []
+}

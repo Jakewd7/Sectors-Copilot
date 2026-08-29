@@ -1,0 +1,6 @@
+{
+    "Auth": true,
+    "Agent": true,
+    "SectorsData": true,
+    "Admin": true
+}
