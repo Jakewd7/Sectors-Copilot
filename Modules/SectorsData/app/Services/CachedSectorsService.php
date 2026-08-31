@@ -15,7 +15,7 @@ class CachedSectorsService
         $this->apiClient = $apiClient;
     }
 
-    protected function remember(string $endpoint, array $params, int $ttlHours, callable $apiCallback): array
+    protected function remember(string $endpoint, array $params, int $ttlHours, callable $apiCallback)
     {
         ksort($params);
         $cacheKey = hash('sha256', self::PROVIDER . ':' . $endpoint . ':' . json_encode($params));
@@ -55,7 +55,7 @@ class CachedSectorsService
     /**
      * Cache 24 Jam: Snapshot Fundamental & Valuasi Emiten
      */
-    public function getCompanyOverview(string $symbol): array
+    public function getCompanyOverview(string $symbol)
     {
         $symbol = strtoupper(trim($symbol));
         $sections = ['overview', 'valuation', 'financials', 'dividend'];
@@ -69,7 +69,7 @@ class CachedSectorsService
     /**
      * Cache 72 Jam: Historical Quarterly Financials
      */
-    public function getQuarterlyFinancials(string $symbol, int $nQuarters = 4): array
+    public function getQuarterlyFinancials(string $symbol, int $nQuarters = 4)
     {
         $symbol = strtoupper(trim($symbol));
         $endpoint = "/financials/quarterly/{$symbol}/";
@@ -82,7 +82,7 @@ class CachedSectorsService
     /**
      * Cache 24 Jam: Subsector Benchmark & Peer Medians
      */
-    public function getSubsectorPeers(string $subSector): array
+    public function getSubsectorPeers(string $subSector)
     {
         $subSector = strtolower(trim(str_replace(' ', '-', $subSector)));
         $sections = ['statistics', 'valuation', 'companies'];
@@ -96,7 +96,7 @@ class CachedSectorsService
     /**
      * Cache 6 Jam: Stock Screener Terstruktur
      */
-    public function screenStocks(array $filters, string $orderBy = '-market_cap', int $limit = 20): array
+    public function screenStocks(array $filters, string $orderBy = '-market_cap', int $limit = 20)
     {
         $conditions = [];
 
@@ -125,6 +125,42 @@ class CachedSectorsService
 
         return $this->remember('/companies/', $params, 6, function () use ($params) {
             return $this->apiClient->screenCompanies($params);
+        });
+    }
+
+    /**
+     * Cache 4 Jam: Top Gainers & Losers Bursa
+     */
+    public function getTopCompanyMovers(array $params = [])
+    {
+        $endpoint = '/companies/top-changes/';
+
+        return $this->remember($endpoint, $params, 4, function () use ($params) {
+            return $this->apiClient->getTopCompanyMovers($params);
+        });
+    }
+
+    /**
+     * Cache 6 Jam: Saham Paling Aktif Diperdagangkan (Volume/Value)
+     */
+    public function getMostTradedStocks(array $params = [])
+    {
+        $endpoint = '/most-traded/';
+
+        return $this->remember($endpoint, $params, 6, function () use ($params) {
+            return $this->apiClient->getMostTradedStocks($params);
+        });
+    }
+
+    /**
+     * Cache 12 Jam: Total Kapitalisasi Pasar IHSG Harian
+     */
+    public function getIdxMarketSummary(array $params = [])
+    {
+        $endpoint = '/idx-total/';
+
+        return $this->remember($endpoint, $params, 12, function () use ($params) {
+            return $this->apiClient->getIdxMarketSummary($params);
         });
     }
 }

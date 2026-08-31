@@ -22,7 +22,7 @@ class ApiCache extends Model
         'expires_at',
     ];
 
-    protected function casts(): array
+    protected function casts()
     {
         return [
             'request_params' => 'array',
@@ -32,9 +32,6 @@ class ApiCache extends Model
         ];
     }
 
-    /**
-     * Scope untuk mengambil cache yang masih valid (belum expired)
-     */
     public function scopeValid($query)
     {
         return $query->where(function ($q) {

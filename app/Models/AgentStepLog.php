@@ -22,7 +22,7 @@ class AgentStepLog extends Model
         'duration_ms',
     ];
 
-    protected function casts(): array
+    protected function casts()
     {
         return [
             'payload_data' => 'array',
@@ -30,7 +30,7 @@ class AgentStepLog extends Model
         ];
     }
 
-    public function message(): BelongsTo
+    public function message()
     {
         return $this->belongsTo(ChatMessage::class, 'chat_message_id');
     }

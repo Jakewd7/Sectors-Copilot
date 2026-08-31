@@ -19,19 +19,19 @@ class ChatMessage extends Model
         'structured_payload',
     ];
 
-    protected function casts(): array
+    protected function casts()
     {
         return [
             'structured_payload' => 'array',
         ];
     }
 
-    public function session(): BelongsTo
+    public function session()
     {
         return $this->belongsTo(ChatSession::class, 'chat_session_id');
     }
 
-    public function stepLogs(): HasMany
+    public function stepLogs()
     {
         return $this->hasMany(AgentStepLog::class, 'chat_message_id');
     }

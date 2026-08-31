@@ -20,21 +20,18 @@ class MarketInsight extends Model
         'published_at',
     ];
 
-    protected function casts(): array
+    protected function casts()
     {
         return [
             'published_at' => 'datetime',
         ];
     }
 
-    public function author(): BelongsTo
+    public function author()
     {
         return $this->belongsTo(User::class, 'author_id');
     }
 
-    /**
-     * Scope untuk hanya memuat artikel yang sudah dipublikasikan
-     */
     public function scopePublished($query)
     {
         return $query->whereNotNull('published_at')

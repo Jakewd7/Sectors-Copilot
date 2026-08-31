@@ -20,7 +20,7 @@ class SectorsDataController extends Controller
     /**
      * GET /api/v1/sectors/company/{symbol}/overview
      */
-    public function companyOverview(string $symbol): JsonResponse
+    public function companyOverview(string $symbol)
     {
         try {
             $result = $this->sectorsService->getCompanyOverview($symbol);
@@ -42,7 +42,7 @@ class SectorsDataController extends Controller
     /**
      * GET /api/v1/sectors/company/{symbol}/financials
      */
-    public function companyFinancials(Request $request, string $symbol): JsonResponse
+    public function companyFinancials(Request $request, string $symbol)
     {
         $validated = $request->validate([
             'n_quarters' => 'nullable|integer|min:1|max:12',
@@ -69,7 +69,7 @@ class SectorsDataController extends Controller
     /**
      * GET /api/v1/sectors/subsector/{subSector}/peers
      */
-    public function subsectorPeers(string $subSector): JsonResponse
+    public function subsectorPeers(string $subSector)
     {
         try {
             $result = $this->sectorsService->getSubsectorPeers($subSector);
@@ -91,7 +91,7 @@ class SectorsDataController extends Controller
     /**
      * GET /api/v1/sectors/screener
      */
-    public function screener(Request $request): JsonResponse
+    public function screener(Request $request)
     {
         $validated = $request->validate([
             'sector' => 'nullable|string|max:100',
@@ -118,6 +118,93 @@ class SectorsDataController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal melakukan screening saham.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * GET /api/v1/sectors/market/top-movers
+     */
+    public function topMovers(Request $request)
+    {
+        $validated = $request->validate([
+            'sub_sector' => 'nullable|string|max:100',
+            'n_stock' => 'nullable|integer|min:1|max:10',
+            'classifications' => 'nullable|string',
+            'periods' => 'nullable|string',
+            'min_mcap_billion' => 'nullable|integer|min:0',
+        ]);
+
+        try {
+            $result = $this->sectorsService->getTopCompanyMovers($validated);
+
+            return response()->json([
+                'success' => true,
+                'meta' => ['is_cached' => $result['is_cached']],
+                'data' => $result['data'],
+            ]);
+        } catch (Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil data top company movers.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * GET /api/v1/sectors/market/most-traded
+     */
+    public function mostTraded(Request $request)
+    {
+        $validated = $request->validate([
+            'sub_sector' => 'nullable|string|max:100',
+            'start' => 'nullable|date_format:Y-m-d',
+            'end' => 'nullable|date_format:Y-m-d',
+            'adjusted' => 'nullable|boolean',
+            'n_stock' => 'nullable|integer|min:1|max:10',
+        ]);
+
+        try {
+            $result = $this->sectorsService->getMostTradedStocks($validated);
+
+            return response()->json([
+                'success' => true,
+                'meta' => ['is_cached' => $result['is_cached']],
+                'data' => $result['data'],
+            ]);
+        } catch (Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil data most traded stocks.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * GET /api/v1/sectors/market/summary
+     */
+    public function marketSummary(Request $request)
+    {
+        $validated = $request->validate([
+            'start' => 'nullable|date_format:Y-m-d',
+            'end' => 'nullable|date_format:Y-m-d',
+        ]);
+
+        try {
+            $result = $this->sectorsService->getIdxMarketSummary($validated);
+
+            return response()->json([
+                'success' => true,
+                'meta' => ['is_cached' => $result['is_cached']],
+                'data' => $result['data'],
+            ]);
+        } catch (Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil ringkasan market IHSG.',
                 'error' => $e->getMessage(),
             ], 500);
         }

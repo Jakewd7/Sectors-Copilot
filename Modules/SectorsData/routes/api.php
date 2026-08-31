@@ -17,4 +17,10 @@ Route::middleware(['auth:sanctum'])->prefix('v1')->group(function () {
         Route::get('screener', [SectorsDataController::class, 'screener'])
             ->name('screener');
     });
+
+    Route::prefix('market')->name('market.')->group(function () {
+        Route::get('top-movers', [SectorsDataController::class, 'topMovers'])->name('top-movers');
+        Route::get('most-traded', [SectorsDataController::class, 'mostTraded'])->name('most-traded');
+        Route::get('summary', [SectorsDataController::class, 'marketSummary'])->name('summary');
+    });
 });

@@ -31,7 +31,7 @@ class SectorsApiClient
     /**
      * GET /v2/company/report/{symbol}/
      */
-    public function getCompanyReport(string $symbol, array $sections = ['overview', 'valuation', 'financials']): array
+    public function getCompanyReport(string $symbol, array $sections = ['overview', 'valuation', 'financials'])
     {
         $symbol = strtoupper(trim($symbol));
         $params = [];
@@ -57,7 +57,7 @@ class SectorsApiClient
     /**
      * GET /v2/financials/quarterly/{symbol}/
      */
-    public function getQuarterlyFinancials(string $symbol, int $nQuarters = 4, bool $approx = true): array
+    public function getQuarterlyFinancials(string $symbol, int $nQuarters = 4, bool $approx = true)
     {
         $symbol = strtoupper(trim($symbol));
         $params = [
@@ -77,7 +77,7 @@ class SectorsApiClient
     /**
      * GET /v2/subsector/report/{sub_sector}/
      */
-    public function getSubsectorReport(string $subSector, array $sections = ['statistics', 'valuation', 'companies']): array
+    public function getSubsectorReport(string $subSector, array $sections = ['statistics', 'valuation', 'companies'])
     {
         $subSector = strtolower(trim(str_replace(' ', '-', $subSector)));
         $params = [];
@@ -100,12 +100,73 @@ class SectorsApiClient
     /**
      * GET /v2/companies/ (Screener)
      */
-    public function screenCompanies(array $params): array
+    public function screenCompanies(array $params)
     {
         $response = $this->client()->get('/companies/', $params);
 
         if ($response->failed()) {
             throw new Exception("Sectors API screener error [{$response->status()}]: {$response->body()}");
+        }
+
+        return $response->json();
+    }
+
+    /**
+     * GET /v2/companies/top-changes/
+     * Biaya: 1 kredit per requested classification x period
+     */
+    public function getTopCompanyMovers(array $params = [])
+    {
+        $defaultParams = [
+            'n_stock' => 5,
+            'classifications' => 'top_gainers,top_losers',
+            'periods' => '1d,7d,30d',
+            'min_mcap_billion' => 5000,
+        ];
+
+        $queryParams = array_merge($defaultParams, $params);
+
+        $response = $this->client()->get('/companies/top-changes/', $queryParams);
+
+        if ($response->failed()) {
+            throw new Exception("Sectors API top-changes error [{$response->status()}]: {$response->body()}");
+        }
+
+        return $response->json();
+    }
+
+    /**
+     * GET /v2/most-traded/
+     * Biaya: 2 kredit
+     */
+    public function getMostTradedStocks(array $params = [])
+    {
+        $defaultParams = [
+            'n_stock' => 5,
+            'adjusted' => 'false',
+        ];
+
+        $queryParams = array_merge($defaultParams, $params);
+
+        $response = $this->client()->get('/most-traded/', $queryParams);
+
+        if ($response->failed()) {
+            throw new Exception("Sectors API most-traded error [{$response->status()}]: {$response->body()}");
+        }
+
+        return $response->json();
+    }
+
+    /**
+     * GET /v2/idx-total/
+     * Biaya: 1 kredit
+     */
+    public function getIdxMarketSummary(array $params = [])
+    {
+        $response = $this->client()->get('/idx-total/', $params);
+
+        if ($response->failed()) {
+            throw new Exception("Sectors API idx-total error [{$response->status()}]: {$response->body()}");
         }
 
         return $response->json();

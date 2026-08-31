@@ -22,7 +22,7 @@ class AdminAuditLog extends Model
         'user_agent',
     ];
 
-    protected function casts(): array
+    protected function casts()
     {
         return [
             'before_payload' => 'array',
@@ -30,7 +30,7 @@ class AdminAuditLog extends Model
         ];
     }
 
-    public function admin(): BelongsTo
+    public function admin()
     {
         return $this->belongsTo(User::class, 'admin_id');
     }

@@ -11,7 +11,7 @@ class TelemetryLog extends Model
 {
     use HasFactory, HasUuids;
 
-    public $timestamps = false; // Aktifkan jika migrasinya tidak memakai updated_at
+    public $timestamps = false;
 
     protected $fillable = [
         'user_id',
@@ -20,7 +20,7 @@ class TelemetryLog extends Model
         'created_at',
     ];
 
-    protected function casts(): array
+    protected function casts()
     {
         return [
             'metadata' => 'array',
@@ -28,7 +28,7 @@ class TelemetryLog extends Model
         ];
     }
 
-    public function user(): BelongsTo
+    public function user()
     {
         return $this->belongsTo(User::class);
     }

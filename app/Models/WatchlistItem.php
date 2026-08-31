@@ -18,14 +18,14 @@ class WatchlistItem extends Model
         'added_at',
     ];
 
-    protected function casts(): array
+    protected function casts()
     {
         return [
             'added_at' => 'datetime',
         ];
     }
 
-    public function watchlist(): BelongsTo
+    public function watchlist()
     {
         return $this->belongsTo(Watchlist::class);
     }

@@ -18,19 +18,19 @@ class ChatSession extends Model
         'is_pinned',
     ];
 
-    protected function casts(): array
+    protected function casts()
     {
         return [
             'is_pinned' => 'boolean',
         ];
     }
 
-    public function user(): BelongsTo
+    public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    public function messages(): HasMany
+    public function messages()
     {
         return $this->hasMany(ChatMessage::class, 'chat_session_id');
     }

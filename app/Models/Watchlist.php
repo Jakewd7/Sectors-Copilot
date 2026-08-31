@@ -18,12 +18,12 @@ class Watchlist extends Model
         'description',
     ];
 
-    public function user(): BelongsTo
+    public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    public function items(): HasMany
+    public function items()
     {
         return $this->hasMany(WatchlistItem::class, 'watchlist_id');
     }

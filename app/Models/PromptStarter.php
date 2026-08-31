@@ -19,7 +19,7 @@ class PromptStarter extends Model
         'display_order',
     ];
 
-    protected function casts(): array
+    protected function casts()
     {
         return [
             'is_active' => 'boolean',
@@ -27,7 +27,7 @@ class PromptStarter extends Model
         ];
     }
 
-    public function creator(): BelongsTo
+    public function creator()
     {
         return $this->belongsTo(User::class, 'user_id');
     }
