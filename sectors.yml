@@ -1,0 +1,293 @@
+openapi: 3.0.3
+info:
+  title: Stock AI Platform - Sectors Data Integration Module
+  version: 1.0.0
+  description: |
+    Dokumentasi REST API Modul SectorsData berbasis Laravel 13 dan Sectors.app v2 API.
+    Dilengkapi lapisan Credit Shield (Auto-Caching PostgreSQL JSONB).
+servers:
+  - url: http://127.0.0.1:8000/api/v1/sectors
+    description: Local Development Server
+
+components:
+  securitySchemes:
+    SanctumBearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Gunakan Token Autentikasi Laravel Sanctum.
+
+security:
+  - SanctumBearerAuth: []
+
+paths:
+  # ==========================================
+  # 1. COMPANY REPORT & OVERVIEW
+  # ==========================================
+  /companies/{symbol}/overview:
+    get:
+      summary: Emiten Overview & Valuation Ratios
+      description: Mengambil data fundamental, valuasi (PER, PBV, ROE), profil bisnis, ESG, dan dividen emiten IDX.
+      tags:
+        - Detailed Reports
+      parameters:
+        - name: symbol
+          in: path
+          required: true
+          description: Ticker saham 4 huruf IDX (misal BBCA, TLKM, BMRI).
+          schema:
+            type: string
+            example: BBCA
+      responses:
+        '200':
+          description: Data ringkasan emiten berhasil dimuat.
+          content:
+            application/json:
+              example:
+                success: true
+                meta:
+                  is_cached: true
+                data:
+                  symbol: "BBCA.JK"
+                  company_name: "PT Bank Central Asia Tbk."
+                  overview:
+                    sector: "Financials"
+                    sub_sector: "Banks"
+                    market_cap: 753611199412500
+                    last_close_price: 6175
+                  valuation:
+                    forward_pe: 12.8
+                    intrinsic_value: 13694
+
+  # ==========================================
+  # 2. QUARTERLY FINANCIALS
+  # ==========================================
+  /companies/{symbol}/financials:
+    get:
+      summary: Historical Quarterly Financials
+      description: Mengambil laporan keuangan kuartalan historis (laba rugi, neraca, arus kas, metrik perbankan).
+      tags:
+        - Detailed Reports
+      parameters:
+        - name: symbol
+          in: path
+          required: true
+          description: Ticker saham IDX.
+          schema:
+            type: string
+            example: BMRI
+        - name: n_quarters
+          in: query
+          required: false
+          description: Jumlah kuartal terakhir yang diambil (1-12). Default 4.
+          schema:
+            type: integer
+            default: 4
+            example: 4
+      responses:
+        '200':
+          description: Data laporan keuangan kuartalan berhasil dimuat.
+
+  # ==========================================
+  # 3. SUBSECTOR BENCHMARK & PEERS
+  # ==========================================
+  /subsectors/{subSector}/peers:
+    get:
+      summary: Subsector Benchmark & Competitors
+      description: Mengambil statistik industri, median PER, performa kuartalan, dan daftar emiten sejenis dalam subsektor.
+      tags:
+        - Detailed Reports
+      parameters:
+        - name: subSector
+          in: path
+          required: true
+          description: Slug subsektor format kebab-case (misal banks, food-beverage).
+          schema:
+            type: string
+            example: banks
+      responses:
+        '200':
+          description: Benchmark subsektor berhasil dimuat.
+
+  # ==========================================
+  # 4. STRUCTURED STOCK SCREENER
+  # ==========================================
+  /screener:
+    get:
+      summary: Natural / Structured Stock Screener
+      description: Menyaring saham IDX berdasarkan kriteria fundamental untuk efisiensi Credit Shield (1 Kredit).
+      tags:
+        - Screener
+      parameters:
+        - name: sector
+          in: query
+          required: false
+          description: Sektor industri target (misal Financials, Technology).
+          schema:
+            type: string
+            example: Financials
+        - name: sub_sector
+          in: query
+          required: false
+          description: Subsektor target (misal Banks).
+          schema:
+            type: string
+            example: Banks
+        - name: min_roe
+          in: query
+          required: false
+          description: Batas minimal Return on Equity (ROE) TTM (misal 0.15 untuk 15%).
+          schema:
+            type: number
+            example: 0.15
+        - name: max_per
+          in: query
+          required: false
+          description: Batas maksimal PER TTM.
+          schema:
+            type: number
+            example: 15
+        - name: min_dividend_yield
+          in: query
+          required: false
+          description: Batas minimal Dividend Yield TTM (misal 0.04 untuk 4%).
+          schema:
+            type: number
+            example: 0.04
+        - name: order_by
+          in: query
+          required: false
+          description: Urutan pengurutan hasil (prefix - untuk descending).
+          schema:
+            type: string
+            default: -market_cap
+            example: -market_cap
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+            example: 10
+      responses:
+        '200':
+          description: Daftar saham hasil screening.
+
+  # ==========================================
+  # 5. MARKET TOP MOVERS (GAINERS & LOSERS)
+  # ==========================================
+  /market/top-movers:
+    get:
+      summary: Top Gainers & Losers Bursa
+      description: Mengambil daftar pergerakan harga saham tertinggi (gainers) dan terendah (losers) per horizon waktu.
+      tags:
+        - Market Intelligence
+      parameters:
+        - name: n_stock
+          in: query
+          required: false
+          description: Jumlah saham per periode (1-10).
+          schema:
+            type: integer
+            default: 5
+            example: 5
+        - name: classifications
+          in: query
+          required: false
+          description: 'Pilihan: top_gainers, top_losers, atau top_gainers,top_losers.'
+          schema:
+            type: string
+            default: top_gainers,top_losers
+            example: top_gainers,top_losers
+        - name: periods
+          in: query
+          required: false
+          description: 'Pilihan periode: 1d, 7d, 14d, 30d, 365d.'
+          schema:
+            type: string
+            default: 1d,7d,30d
+            example: 1d,7d
+        - name: min_mcap_billion
+          in: query
+          required: false
+          description: Filter minimal Market Cap dalam Miliar IDR (default 5000 = 5T).
+          schema:
+            type: integer
+            default: 5000
+            example: 5000
+      responses:
+        '200':
+          description: Data pergerakan top movers bursa.
+
+  # ==========================================
+  # 6. MOST TRADED STOCKS
+  # ==========================================
+  /market/most-traded:
+    get:
+      summary: Most Traded Stocks by Volume / Value
+      description: Mengambil daftar saham paling aktif diperdagangkan di bursa hingga rentang 90 hari.
+      tags:
+        - Market Intelligence
+      parameters:
+        - name: n_stock
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 5
+            example: 5
+        - name: adjusted
+          in: query
+          required: false
+          description: 'Jika true, diranking berdasarkan transaksi nilai (Volume x Harga Closing).'
+          schema:
+            type: boolean
+            default: false
+            example: false
+        - name: start
+          in: query
+          required: false
+          description: Tanggal awal (YYYY-MM-DD).
+          schema:
+            type: string
+            format: date
+            example: 2026-08-01
+        - name: end
+          in: query
+          required: false
+          description: Tanggal akhir (YYYY-MM-DD).
+          schema:
+            type: string
+            format: date
+            example: 2026-08-31
+      responses:
+        '200':
+          description: Data saham paling aktif diperdagangkan.
+
+  # ==========================================
+  # 7. IDX MARKET SUMMARY
+  # ==========================================
+  /market/summary:
+    get:
+      summary: Total IDX Market Capitalization History
+      description: Mengambil rekam jejak total kapitalisasi pasar seluruh bursa saham Indonesia (IHSG).
+      tags:
+        - Market Intelligence
+      parameters:
+        - name: start
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+            example: 2026-08-01
+        - name: end
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+            example: 2026-08-31
+      responses:
+        '200':
+          description: Ringkasan total market cap IHSG.
