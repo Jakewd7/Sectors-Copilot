@@ -1,541 +1,481 @@
 @extends('layouts.app')
 
 @section('content')
-    <!-- Include Chart.js via CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <!-- Main Alpine Container with Multi-language Dictionary State -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6" x-data="{ 
-            openChat: false,
-            lang: 'en',
+    @php
+        // 1. Normalisasi Top Gainers & Losers (Format Sectors API: $topMovers['top_gainers']['1d'] atau list langsung)
+        $gainersList = $topMovers['top_gainers']['1d'] ?? ($topMovers['top_gainers'] ?? []);
+        $losersList = $topMovers['top_losers']['1d'] ?? ($topMovers['top_losers'] ?? []);
+
+        $topGainer = $gainersList[0] ?? null;
+        $topLoser = $losersList[0] ?? null;
+
+        // 2. Normalisasi Most Traded (Format Sectors API: associative array keyed by date)
+        $mostTradedGrouped = $mostTraded ?? [];
+        $latestDateTrades = !empty($mostTradedGrouped) ? end($mostTradedGrouped) : [];
+        $topTraded = is_array($latestDateTrades) ? ($latestDateTrades[0] ?? null) : null;
+
+        // 3. Normalisasi IHSG Market Cap (Sectors API: 'idx_total_market_cap')
+        $summaryData = is_array($summary) && isset($summary[0]) ? end($summary) : ($summary ?? []);
+        $marketCapVal = $summaryData['idx_total_market_cap'] ?? ($summaryData['market_cap'] ?? 0);
+        $marketCapTrillion = $marketCapVal > 0 ? ($marketCapVal / 1000000000000) : 0;
+
+        $watchlistTickers = collect($watchlist['items'] ?? [])->pluck('ticker')->implode(',');
+        $agentRouteExists = \Illuminate\Support\Facades\Route::has('agent.workspace');
+    @endphp
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6" x-data="{ 
+            lang: 'id',
             t: {
                 en: {
                     welcome: 'Welcome Back',
                     proInvestor: 'Pro Investor',
                     subtitle: 'Real-Time Market Monitoring & Portfolio Telemetry System',
-                    marketSentiment: 'Market Sentiment (AI Index):',
+                    marketSentiment: 'Market Sentiment:',
                     bullishStatus: 'Strongly Bullish (78/100)',
-                    askCopilot: 'Ask Copilot',
+                    askCopilot: 'Open Copilot Workspace',
                     ihsgCap: 'IHSG Market Cap & Top Movers',
                     realTimeSync: 'Real-Time Sync',
                     topGainer: 'TOP GAINER',
                     topLoser: 'TOP LOSER',
                     mostTraded: 'MOST TRADED',
                     creditShield: 'Credit Shield & Cache Telemetry',
-                    telemetryStatus: 'API Quota Performance & LLM Response',
+                    telemetryStatus: 'API Quota Performance & System Efficiency',
                     cacheHitRate: 'CACHE HIT RATE',
-                    cacheHitDesc: 'High Query Efficiency',
-                    cacheAge: 'CACHE AGE',
-                    cacheAgeDesc: 'Next Refresh: 3m',
-                    aiQuota: 'REMAINING AI QUOTA',
-                    sectorHeatmap: 'Sector Heatmap Grid',
-                    sectorSubtitle: 'Today\'s Industry Sector Performance',
-                    watchlistTitle: 'User Watchlist & Quick Actions',
-                    watchlistSubtitle: 'Monitored Banking Sector',
+                    cacheHitDesc: 'Query Efficiency',
+                    aiQuota: 'REMAINING API QUOTA',
+                    totalRequests: 'TOTAL REQUESTS',
+                    sectorHeatmap: 'Sector Benchmark Grid',
+                    sectorSubtitle: 'Tracked Industry Sector Fundamentals',
+                    watchlistTitle: 'User Watchlist',
+                    watchlistSubtitle: '{{ $watchlist['name'] ?? 'Main Portfolio' }}',
                     oneClickCopilot: '⚡ 1-Click Copilot',
-                    target: 'Target',
-                    banksMonitored: '2 Banking Stocks Monitored',
-                    manageWatchlist: 'Manage Watchlist →',
+                    target: 'Forward PE',
+                    monitoredCount: '{{ count($watchlist['items'] ?? []) }} Stocks Monitored',
                     dailyInsights: 'Daily Market Insights & Editorial',
-                    insightsSubtitle: 'Curated Articles & Analyst Opinions (Admin CMS)',
-                    macroTag: 'MACRO INSIGHT',
-                    articleTitle: 'Banking Sector Outlook Q3 Following BI Interest Rate Announcement',
-                    articleDesc: 'BBCA and BMRI demonstrate positive performance driven by well-maintained NPL ratios...',
-                    byAuthor: 'By: Chief Economist Team',
+                    insightsSubtitle: 'Curated Articles & Sector Updates',
                     readFull: 'Read Full Article →',
-                    aiName: 'Gemini Investment Copilot',
-                    aiOnline: 'Online',
-                    aiWelcome: 'Hello! Any banking stocks (BBCA, BMRI) you would like to analyze with Copilot?',
-                    chatPlaceholder: 'Type a question...',
-                    chatSend: 'Send'
+                    emptyWatchlist: 'No stocks in watchlist yet.',
+                    emptyInsights: 'No published insights available.'
                 },
                 id: {
                     welcome: 'Selamat Datang',
                     proInvestor: 'Pro Investor',
                     subtitle: 'Sistem Pemantauan Pasar & Telemetri Portofolio Real-Time',
-                    marketSentiment: 'Sentimen Pasar (AI Index):',
+                    marketSentiment: 'Sentimen Pasar:',
                     bullishStatus: 'Sangat Bullish (78/100)',
-                    askCopilot: 'Tanya Copilot',
+                    askCopilot: 'Buka Workspace Copilot',
                     ihsgCap: 'IHSG Market Cap & Top Movers',
                     realTimeSync: 'Sinkronisasi Real-Time',
                     topGainer: 'TOP GAINER',
                     topLoser: 'TOP LOSER',
                     mostTraded: 'PALING AKTIF',
                     creditShield: 'Credit Shield & Telemetri Cache',
-                    telemetryStatus: 'Status Performa Kuota API & Respon LLM',
+                    telemetryStatus: 'Status Kuota API & Efisiensi Sistem',
                     cacheHitRate: 'CACHE HIT RATE',
                     cacheHitDesc: 'Efisiensi Query Tinggi',
-                    cacheAge: 'UMUR CACHE',
-                    cacheAgeDesc: 'Refresh Berikutnya: 3m',
-                    aiQuota: 'SISA KUOTA AI',
-                    sectorHeatmap: 'Grid Heatmap Sektor',
-                    sectorSubtitle: 'Performa Sektor Industri Hari Ini',
-                    watchlistTitle: 'Watchlist Pengguna & Akses Cepat',
-                    watchlistSubtitle: 'Sektor Perbankan Dipantau',
+                    aiQuota: 'SISA KUOTA API',
+                    totalRequests: 'TOTAL REQUEST',
+                    sectorHeatmap: 'Grid Benchmark Sektor',
+                    sectorSubtitle: 'Fundamental Sektor Industri Terpantau',
+                    watchlistTitle: 'Watchlist Pengguna',
+                    watchlistSubtitle: '{{ $watchlist['name'] ?? 'Portofolio Utama' }}',
                     oneClickCopilot: '⚡ 1-Klik Copilot',
-                    target: 'Target',
-                    banksMonitored: '2 Saham Bank Dipantau',
-                    manageWatchlist: 'Kelola Watchlist →',
+                    target: 'Forward PE',
+                    monitoredCount: '{{ count($watchlist['items'] ?? []) }} Saham Dipantau',
                     dailyInsights: 'Wawasan Pasar Harian & Editorial',
-                    insightsSubtitle: 'Artikel Kurasi & Opini Analis (CMS Admin)',
-                    macroTag: 'WAWASAN MAKRO',
-                    articleTitle: 'Prospek Sektor Perbankan Kuartal III Pasca Pengumuman Suku Bunga BI',
-                    articleDesc: 'BBCA dan BMRI menunjukkan performa positif berkat rasio NPL yang tetap    aga baik...',
-                    byAuthor: 'Oleh: Tim Chief Economist',
+                    insightsSubtitle: 'Artikel Kurasi & Pembaruan Emiten',
                     readFull: 'Baca Artikel Lengkap →',
-                    aiName: 'Gemini Investment Copilot',
-                    aiOnline: 'Online',
-                    aiWelcome: 'Halo! Ada saham perbankan (BBCA, BMRI) yang ingin kamu analisis dengan Copilot?',
-                    chatPlaceholder: 'Ketik pertanyaan...',
-                    chatSend: 'Kirim'
+                    emptyWatchlist: 'Belum ada saham di watchlist.',
+                    emptyInsights: 'Belum ada wawasan yang dipublikasikan.'
                 }
             }
-         }">
+        }">
 
-        <!-- ============================================================ -->
-        <!-- HEADER & LANGUAGE SWITCHER                                   -->
-        <!-- ============================================================ -->
-        <div
-            class="bg-surface border border-border rounded-2xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
-                <div class="flex items-center gap-2">
-                    <h1 class="text-2xl font-bold text-text-primary tracking-tight">
-                        <span x-text="t[lang].welcome"></span>{{ auth()->check() ? ', ' . auth()->user()->name : '' }}
-                    </h1>
-                    <span
-                        class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-accent/15 text-accent border border-accent/30"
-                        x-text="t[lang].proInvestor"></span>
-                </div>
-                <p class="text-xs text-text-muted mt-1" x-text="t[lang].subtitle"></p>
-            </div>
-
-            <div class="flex items-center gap-3">
-                <!-- Language Switcher Button (EN / ID) -->
-                <button @click="lang = (lang === 'en' ? 'id' : 'en')"
-                    class="px-3 py-2 bg-background border border-border hover:border-accent text-text-primary rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
-                    <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
-                    </svg>
-                    <span x-text="lang === 'en' ? 'EN ➔ ID' : 'ID ➔ EN'"></span>
-                </button>
-
-                <div
-                    class="hidden md:flex items-center gap-3 bg-background/80 backdrop-blur px-3.5 py-2 rounded-xl border border-border text-xs">
-                    <span class="text-text-muted" x-text="t[lang].marketSentiment"></span>
-                    <div class="flex items-center gap-1.5 font-semibold text-emerald-500">
-                        <span class="relative flex h-2 w-2">
-                            <span
-                                class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                        </span>
-                        <span x-text="t[lang].bullishStatus"></span>
+            <!-- ============================================================ -->
+            <!-- HEADER & DIRECT ACTION                                       -->
+            <!-- ============================================================ -->
+            <div class="bg-surface border border-border rounded-2xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h1 class="text-2xl font-bold text-text-primary tracking-tight">
+                            <span x-text="t[lang].welcome"></span>{{ auth()->check() ? ', ' . auth()->user()->name : '' }}
+                        </h1>
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-accent/15 text-accent border border-accent/30"
+                            x-text="t[lang].proInvestor"></span>
                     </div>
+                    <p class="text-xs text-text-muted mt-1" x-text="t[lang].subtitle"></p>
                 </div>
 
-                <button @click="openChat = true"
-                    class="px-4 py-2.5 bg-accent text-white rounded-xl text-xs font-semibold hover:bg-accent-dim transition flex items-center gap-2 shadow-lg shadow-accent/20">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                    <span x-text="t[lang].askCopilot"></span>
-                </button>
-            </div>
-        </div>
+                <div class="flex flex-wrap items-center gap-3">
+                    <button @click="lang = (lang === 'en' ? 'id' : 'en')"
+                        class="px-3 py-2 bg-background border border-border hover:border-accent text-text-primary rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-sm">
+                        <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+                        </svg>
+                        <span x-text="lang === 'en' ? 'EN ➔ ID' : 'ID ➔ EN'"></span>
+                    </button>
 
-        <!-- ============================================================ -->
-        <!-- SECTION A: Market Highlights & Telemetry                      -->
-        <!-- ============================================================ -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- 1. IHSG Market Cap & Top Movers -->
-            <div class="bg-surface border border-border rounded-2xl p-6 shadow-sm relative overflow-hidden">
-                <div class="flex justify-between items-start mb-4">
+                    <div class="hidden sm:flex items-center gap-2 bg-background/80 px-3 py-2 rounded-xl border border-border text-xs">
+                        <span class="text-text-muted" x-text="t[lang].marketSentiment"></span>
+                        <div class="flex items-center gap-1.5 font-semibold text-emerald-500">
+                            <span class="relative flex h-2 w-2">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                            </span>
+                            <span x-text="t[lang].bullishStatus"></span>
+                        </div>
+                    </div>
+
+                    <!-- Direct Redirection to Agent Workspace -->
+                    <a href="{{ $agentRouteExists ? route('agent.workspace') : '#' }}"
+                        class="px-4 py-2 bg-accent text-white rounded-xl text-xs font-semibold hover:bg-accent-dim transition flex items-center gap-2 shadow-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        <span x-text="t[lang].askCopilot"></span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- ============================================================ -->
+            <!-- SECTION A: Market Highlights & Telemetry                      -->
+            <!-- ============================================================ -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- 1. IHSG Market Cap & Top Movers -->
+                <div class="bg-surface border border-border rounded-2xl p-6 shadow-sm flex flex-col justify-between">
                     <div>
-                        <h2 class="text-xs font-bold text-text-muted uppercase tracking-wider" x-text="t[lang].ihsgCap">
-                        </h2>
-                        <div class="flex items-baseline gap-2 mt-1">
-                            <span class="text-xl font-extrabold text-text-primary">7,345.20</span>
-                            <span class="text-xs font-semibold text-emerald-500">↑ +58.4 (0.80%)</span>
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h2 class="text-xs font-bold text-text-muted uppercase tracking-wider" x-text="t[lang].ihsgCap"></h2>
+                                <div class="flex items-baseline gap-2 mt-1">
+                                    <span class="text-xl font-extrabold text-text-primary">
+                                        Rp {{ number_format($marketCapTrillion, 2, ',', '.') }} T
+                                    </span>
+                                    <span class="text-xs font-semibold text-emerald-500">
+                                        ↑ +0.85%
+                                    </span>
+                                </div>
+                            </div>
+                            <span class="text-[10px] bg-background border border-border px-2 py-1 rounded-md text-text-muted"
+                                x-text="t[lang].realTimeSync"></span>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                            <!-- Top Gainer -->
+                            <div class="bg-background/60 p-3 rounded-xl border border-border/80 flex flex-col justify-between">
+                                <div>
+                                    <div class="flex items-center justify-between text-[10px] text-text-muted mb-1">
+                                        <span x-text="t[lang].topGainer"></span>
+                                        <span class="text-emerald-500 font-bold">▲</span>
+                                    </div>
+                                    <span class="font-bold text-text-primary block">
+                                        {{ str_replace('.JK', '', $topGainer['symbol'] ?? ($topGainer['ticker'] ?? 'N/A')) }}
+                                    </span>
+                                    @php 
+                                                                            $gainerPct = ((float) ($topGainer['price_change'] ?? ($topGainer['price_change_percentage'] ?? 0))) * 100;
+                                        $gainerPrice = $topGainer['last_close_price'] ?? ($topGainer['close_price'] ?? 0);
+                                    @endphp
+                                    <span class="text-[11px] text-emerald-500 font-semibold mt-0.5 block">
+                                        Rp {{ number_format($gainerPrice, 0, ',', '.') }}
+                                        (+{{ number_format($gainerPct, 1) }}%)
+                                    </span>
+                                </div>
+                                <div class="h-10 mt-2"><canvas id="chartGainer"></canvas></div>
+                            </div>
+
+                            <!-- Top Loser -->
+                            <div class="bg-background/60 p-3 rounded-xl border border-border/80 flex flex-col justify-between">
+                                <div>
+                                    <div class="flex items-center justify-between text-[10px] text-text-muted mb-1">
+                                        <span x-text="t[lang].topLoser"></span>
+                                        <span class="text-red-500 font-bold">▼</span>
+                                    </div>
+                                    <span class="font-bold text-text-primary block">
+                                        {{ str_replace('.JK', '', $topLoser['symbol'] ?? ($topLoser['ticker'] ?? 'N/A')) }}
+                                    </span>
+                                    @php 
+                                                                            $loserPct = ((float) ($topLoser['price_change'] ?? ($topLoser['price_change_percentage'] ?? 0))) * 100;
+                                        $loserPrice = $topLoser['last_close_price'] ?? ($topLoser['close_price'] ?? 0);
+                                    @endphp
+                                    <span class="text-[11px] text-red-500 font-semibold mt-0.5 block">
+                                        Rp {{ number_format($loserPrice, 0, ',', '.') }}
+                                        ({{ number_format($loserPct, 1) }}%)
+                                    </span>
+                                </div>
+                                <div class="h-10 mt-2"><canvas id="chartLoser"></canvas></div>
+                            </div>
+
+                            <!-- Most Traded -->
+                            <div class="bg-background/60 p-3 rounded-xl border border-border/80 flex flex-col justify-between">
+                                <div>
+                                    <div class="flex items-center justify-between text-[10px] text-text-muted mb-1">
+                                        <span x-text="t[lang].mostTraded"></span>
+                                        <span class="text-accent font-bold">★</span>
+                                    </div>
+                                    <span class="font-bold text-text-primary block">
+                                        {{ str_replace('.JK', '', $topTraded['symbol'] ?? ($topTraded['ticker'] ?? 'N/A')) }}
+                                    </span>
+                                    <span class="text-[11px] text-text-primary font-semibold mt-0.5 block">
+                                        Rp {{ number_format($topTraded['price'] ?? ($topTraded['last_close_price'] ?? 0), 0, ',', '.') }}
+                                    </span>
+                                </div>
+                                <div class="h-10 mt-2"><canvas id="chartMostTraded"></canvas></div>
+                            </div>
                         </div>
                     </div>
-                    <span class="text-[10px] bg-background border border-border px-2 py-1 rounded-md text-text-muted"
-                        x-text="t[lang].realTimeSync"></span>
                 </div>
 
-                <!-- Detail Top Movers Grid -->
-                <div class="grid grid-cols-3 gap-3 text-xs">
-                    <div class="bg-background/60 p-3 rounded-xl border border-border/80 flex flex-col justify-between">
-                        <div>
-                            <div class="flex items-center justify-between text-[10px] text-text-muted mb-1">
-                                <span x-text="t[lang].topGainer"></span>
-                                <span class="text-emerald-500 font-bold">▲</span>
+                <!-- 2. Credit Shield & Cache Telemetry -->
+                <div class="bg-surface border border-border rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h2 class="text-xs font-bold text-text-muted uppercase tracking-wider" x-text="t[lang].creditShield"></h2>
+                                <p class="text-xs text-text-primary font-semibold mt-1" x-text="t[lang].telemetryStatus"></p>
                             </div>
-                            <span class="font-bold text-text-primary block">BBCA</span>
-                            <span class="text-[11px] text-emerald-500 font-semibold mt-0.5 block">Rp 10,050 (+2.4%)</span>
+                            <span class="flex h-2 w-2 rounded-full {{ ($telemetry['credits_remaining'] ?? 0) > 50 ? 'bg-emerald-500' : 'bg-amber-500' }}"></span>
                         </div>
-                        <!-- Mini Sparkline Chart BBCA -->
-                        <div class="h-10 mt-2">
-                            <canvas id="chartBBCA"></canvas>
-                        </div>
-                    </div>
 
-                    <div class="bg-background/60 p-3 rounded-xl border border-border/80 flex flex-col justify-between">
-                        <div>
-                            <div class="flex items-center justify-between text-[10px] text-text-muted mb-1">
-                                <span x-text="t[lang].topLoser"></span>
-                                <span class="text-red-500 font-bold">▼</span>
+                        <div class="grid grid-cols-3 gap-3 text-xs">
+                            <div class="bg-background/60 p-3 rounded-xl border border-border/80">
+                                <span class="text-[10px] text-text-muted block" x-text="t[lang].cacheHitRate"></span>
+                                <span class="text-lg font-bold text-accent mt-0.5 block">{{ $telemetry['hit_rate_percentage'] ?? 0 }}%</span>
+                                <p class="text-[9px] text-emerald-500 mt-1" x-text="t[lang].cacheHitDesc"></p>
                             </div>
-                            <span class="font-bold text-text-primary block">GOTO</span>
-                            <span class="text-[11px] text-red-500 font-semibold mt-0.5 block">Rp 52 (-3.1%)</span>
-                        </div>
-                        <!-- Mini Sparkline Chart GOTO -->
-                        <div class="h-10 mt-2">
-                            <canvas id="chartGOTO"></canvas>
-                        </div>
-                    </div>
 
-                    <div class="bg-background/60 p-3 rounded-xl border border-border/80 flex flex-col justify-between">
-                        <div>
-                            <div class="flex items-center justify-between text-[10px] text-text-muted mb-1">
-                                <span x-text="t[lang].mostTraded"></span>
-                                <span class="text-accent font-bold">★</span>
+                            <div class="bg-background/60 p-3 rounded-xl border border-border/80">
+                                <span class="text-[10px] text-text-muted block" x-text="t[lang].totalRequests"></span>
+                                <span class="text-lg font-bold text-text-primary mt-0.5 block">{{ number_format($telemetry['total_requests'] ?? 0) }}</span>
+                                <p class="text-[9px] text-text-muted mt-1">{{ $telemetry['credits_used'] ?? 0 }} misses</p>
                             </div>
-                            <span class="font-bold text-text-primary block">TLKM</span>
-                            <span class="text-[11px] text-text-primary font-semibold mt-0.5 block">Rp 3,850 (+0.5%)</span>
-                        </div>
-                        <!-- Mini Sparkline Chart TLKM -->
-                        <div class="h-10 mt-2">
-                            <canvas id="chartTLKM"></canvas>
+
+                            <div class="bg-background/60 p-3 rounded-xl border border-border/80">
+                                <span class="text-[10px] text-text-muted block" x-text="t[lang].aiQuota"></span>
+                                <span class="text-lg font-bold text-emerald-500 mt-0.5 block">
+                                    {{ $telemetry['credits_remaining'] ?? 0 }}
+                                    <span class="text-xs font-normal text-text-muted">/{{ $telemetry['quota_limit'] ?? 1000 }}</span>
+                                </span>
+                                @php
+                                    $quotaLimit = $telemetry['quota_limit'] ?? 1000;
+                                    $remaining = $telemetry['credits_remaining'] ?? 0;
+                                    $pct = $quotaLimit > 0 ? ($remaining / $quotaLimit) * 100 : 0;
+                                @endphp
+                                <div class="w-full bg-border h-1.5 rounded-full mt-2 overflow-hidden">
+                                    <div class="bg-emerald-500 h-full rounded-full transition-all duration-500" style="width: {{ $pct }}%"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- 2. Credit Shield & Cache Telemetry -->
+            <!-- ============================================================ -->
+            <!-- SECTION B: Sector Benchmark Grid                             -->
+            <!-- ============================================================ -->
             <div class="bg-surface border border-border rounded-2xl p-6 shadow-sm">
-                <div class="flex justify-between items-start mb-4">
+                <div class="flex justify-between items-center mb-4">
                     <div>
-                        <h2 class="text-xs font-bold text-text-muted uppercase tracking-wider"
-                            x-text="t[lang].creditShield"></h2>
-                        <p class="text-xs text-text-primary font-semibold mt-1" x-text="t[lang].telemetryStatus"></p>
+                        <h2 class="text-xs font-bold text-text-muted uppercase tracking-wider" x-text="t[lang].sectorHeatmap"></h2>
+                        <p class="text-xs text-text-primary font-semibold mt-0.5" x-text="t[lang].sectorSubtitle"></p>
                     </div>
-                    <span class="flex h-2 w-2 rounded-full bg-emerald-500" title="System Normal"></span>
                 </div>
 
-                <div class="grid grid-cols-3 gap-3 text-xs">
-                    <div class="bg-background/60 p-3 rounded-xl border border-border/80">
-                        <span class="text-[10px] text-text-muted block" x-text="t[lang].cacheHitRate"></span>
-                        <span class="text-lg font-bold text-accent mt-0.5 block">94.2%</span>
-                        <p class="text-[9px] text-emerald-500 mt-1" x-text="t[lang].cacheHitDesc"></p>
-                    </div>
-
-                    <div class="bg-background/60 p-3 rounded-xl border border-border/80">
-                        <span class="text-[10px] text-text-muted block" x-text="t[lang].cacheAge"></span>
-                        <span class="text-lg font-bold text-text-primary mt-0.5 block">12m ago</span>
-                        <p class="text-[9px] text-text-muted mt-1" x-text="t[lang].cacheAgeDesc"></p>
-                    </div>
-
-                    <div class="bg-background/60 p-3 rounded-xl border border-border/80">
-                        <span class="text-[10px] text-text-muted block" x-text="t[lang].aiQuota"></span>
-                        <span class="text-lg font-bold text-emerald-500 mt-0.5 block">850 <span
-                                class="text-xs font-normal text-text-muted">/1000</span></span>
-                        <div class="w-full bg-border h-1.5 rounded-full mt-2 overflow-hidden">
-                            <div class="bg-emerald-500 h-full w-[85%] rounded-full"></div>
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 text-xs">
+                    @forelse ($sectors as $sector)
+                        @php
+                            $pe = $sector['benchmark']['mean_pe']
+                                ?? ($sector['benchmark']['pe_ratio']
+                                    ?? ($sector['benchmark']['median_pe'] ?? null));
+                        @endphp
+                        <div class="bg-background border border-border/80 hover:border-accent/40 p-3.5 rounded-xl transition">
+                            <span class="font-bold text-text-primary block truncate">{{ $sector['name'] }}</span>
+                            <div class="mt-2 flex items-baseline justify-between">
+                                <span class="text-text-muted text-[10px]">Peers: {{ $sector['peers_count'] }}</span>
+                                <span class="font-semibold text-accent text-xs">
+                                    {{ $pe ? 'PE ' . number_format((float) $pe, 1) . 'x' : 'Active' }}
+                                </span>
+                            </div>
                         </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- ============================================================ -->
-        <!-- SECTION B: Sector Heatmap Grid                               -->
-        <!-- ============================================================ -->
-        <div class="bg-surface border border-border rounded-2xl p-6 shadow-sm">
-            <div class="flex justify-between items-center mb-4">
-                <div>
-                    <h2 class="text-xs font-bold text-text-muted uppercase tracking-wider" x-text="t[lang].sectorHeatmap">
-                    </h2>
-                    <p class="text-xs text-text-primary font-semibold mt-0.5" x-text="t[lang].sectorSubtitle"></p>
+                    @empty
+                        <div class="col-span-full text-center text-xs text-text-muted py-4">Data benchmark sektor tidak tersedia.</div>
+                    @endforelse
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-xs">
-                <div class="bg-emerald-500/10 border border-emerald-500/30 p-3.5 rounded-xl">
-                    <span class="font-bold text-emerald-500 block">Financials</span>
-                    <span class="text-xs font-extrabold text-emerald-500 mt-1 block">+1.45%</span>
-                </div>
-                <div class="bg-red-500/10 border border-red-500/30 p-3.5 rounded-xl">
-                    <span class="font-bold text-red-500 block">Technology</span>
-                    <span class="text-xs font-extrabold text-red-500 mt-1 block">-0.82%</span>
-                </div>
-                <div class="bg-emerald-500/10 border border-emerald-500/30 p-3.5 rounded-xl">
-                    <span class="font-bold text-emerald-500 block">Consumer</span>
-                    <span class="text-xs font-extrabold text-emerald-500 mt-1 block">+0.30%</span>
-                </div>
-                <div class="bg-emerald-500/10 border border-emerald-500/30 p-3.5 rounded-xl">
-                    <span class="font-bold text-emerald-500 block">Energy</span>
-                    <span class="text-xs font-extrabold text-emerald-500 mt-1 block">+2.10%</span>
-                </div>
-                <div class="bg-background border border-border p-3.5 rounded-xl">
-                    <span class="font-bold text-text-primary block">Infrastructure</span>
-                    <span class="text-xs font-extrabold text-text-muted mt-1 block">0.00%</span>
-                </div>
-                <div class="bg-red-500/10 border border-red-500/30 p-3.5 rounded-xl">
-                    <span class="font-bold text-red-500 block">Healthcare</span>
-                    <span class="text-xs font-extrabold text-red-500 mt-1 block">-0.45%</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- ============================================================ -->
-        <!-- SECTION C: Personal Workspace & Curated Insights             -->
-        <!-- ============================================================ -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Watchlist with Banking Charts (BBCA & BMRI) -->
-            <div class="bg-surface border border-border rounded-2xl p-6 shadow-sm flex flex-col justify-between">
-                <div>
-                    <div class="flex justify-between items-center mb-4">
-                        <div>
-                            <h2 class="text-xs font-bold text-text-muted uppercase tracking-wider"
-                                x-text="t[lang].watchlistTitle"></h2>
-                            <p class="text-xs text-text-primary font-semibold mt-0.5" x-text="t[lang].watchlistSubtitle">
-                            </p>
-                        </div>
-                        <button @click="openChat = true"
-                            class="px-2.5 py-1 bg-accent/15 text-accent border border-accent/30 rounded-lg text-xs font-bold hover:bg-accent/25 transition"
-                            x-text="t[lang].oneClickCopilot">
-                        </button>
-                    </div>
-
-                    <div class="space-y-3 text-xs">
-                        <!-- Item Watchlist BBCA -->
-                        <div
-                            class="p-3.5 bg-background/60 border border-border/80 rounded-xl flex items-center justify-between gap-4">
-                            <div class="w-1/3">
-                                <div class="flex items-center gap-1.5">
-                                    <span class="font-extrabold text-text-primary">BBCA</span>
-                                    <span
-                                        class="text-[9px] px-1 py-0.2 rounded bg-emerald-500/10 text-emerald-500 font-bold">BUY</span>
-                                </div>
-                                <p class="text-[10px] text-text-muted mt-0.5">Bank Central Asia Tbk.</p>
-                                <span class="font-bold text-emerald-500 text-xs mt-1 block">Rp 10,050</span>
-                            </div>
-
-                            <!-- Mini Line Chart BBCA -->
-                            <div class="w-1/3 h-10">
-                                <canvas id="chartWatchlistBBCA"></canvas>
-                            </div>
-
-                            <div class="text-right w-1/3">
-                                <span class="text-emerald-500 font-bold text-xs">+1.2%</span>
-                                <span class="text-[10px] text-text-muted block mt-1"><span x-text="t[lang].target"></span>:
-                                    10,800</span>
-                            </div>
-                        </div>
-
-                        <!-- Item Watchlist BMRI -->
-                        <div
-                            class="p-3.5 bg-background/60 border border-border/80 rounded-xl flex items-center justify-between gap-4">
-                            <div class="w-1/3">
-                                <div class="flex items-center gap-1.5">
-                                    <span class="font-extrabold text-text-primary">BMRI</span>
-                                    <span
-                                        class="text-[9px] px-1 py-0.2 rounded bg-emerald-500/10 text-emerald-500 font-bold">BUY</span>
-                                </div>
-                                <p class="text-[10px] text-text-muted mt-0.5">Bank Mandiri Tbk.</p>
-                                <span class="font-bold text-emerald-500 text-xs mt-1 block">Rp 7,150</span>
-                            </div>
-
-                            <!-- Mini Line Chart BMRI -->
-                            <div class="w-1/3 h-10">
-                                <canvas id="chartWatchlistBMRI"></canvas>
-                            </div>
-
-                            <div class="text-right w-1/3">
-                                <span class="text-emerald-500 font-bold text-xs">+2.0%</span>
-                                <span class="text-[10px] text-text-muted block mt-1"><span x-text="t[lang].target"></span>:
-                                    7,600</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="mt-4 pt-3 border-t border-border flex justify-between items-center text-xs">
-                    <span class="text-text-muted text-[11px]" x-text="t[lang].banksMonitored"></span>
-                    <a href="{{ route('workspace.profile') }}" class="text-accent font-medium hover:underline text-[11px]"
-                        x-text="t[lang].manageWatchlist"></a>
-                </div>
-            </div>
-
-            <!-- Daily Insights & Editorial -->
-            <div class="bg-surface border border-border rounded-2xl p-6 shadow-sm flex flex-col justify-between">
-                <div>
-                    <div class="flex justify-between items-center mb-4">
-                        <div>
-                            <h2 class="text-xs font-bold text-text-muted uppercase tracking-wider"
-                                x-text="t[lang].dailyInsights"></h2>
-                            <p class="text-xs text-text-primary font-semibold mt-0.5" x-text="t[lang].insightsSubtitle"></p>
-                        </div>
-                    </div>
-
-                    <div class="space-y-3 text-xs">
-                        <div class="p-3.5 bg-background/60 border border-border/80 rounded-xl">
-                            <span class="text-[9px] font-bold px-1.5 py-0.5 bg-accent text-white rounded"
-                                x-text="t[lang].macroTag"></span>
-                            <h3 class="font-bold text-text-primary text-sm mt-1" x-text="t[lang].articleTitle"></h3>
-                            <p class="text-text-muted text-[11px] mt-1 leading-relaxed" x-text="t[lang].articleDesc"></p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="mt-4 pt-3 border-t border-border flex justify-between items-center text-xs">
-                    <span class="text-text-muted text-[11px]" x-text="t[lang].byAuthor"></span>
-                    <a href="#" class="text-accent font-medium hover:underline text-[11px]" x-text="t[lang].readFull"></a>
-                </div>
-            </div>
-        </div>
-
-        <!-- ============================================================ -->
-        <!-- FLOATING CHATBOT WIDGET                                       -->
-        <!-- ============================================================ -->
-        <div x-show="openChat" x-transition @click.outside="openChat = false"
-            class="fixed bottom-24 right-6 w-[360px] sm:w-[400px] h-[520px] bg-surface border border-border rounded-2xl shadow-2xl z-50 flex flex-col overflow-hidden"
-            style="display: none;">
-
-            <div class="px-4 py-3 bg-surface border-b border-border flex items-center justify-between">
-                <div class="flex items-center gap-2.5">
-                    <div
-                        class="w-9 h-9 rounded-full bg-accent/20 text-accent flex items-center justify-center font-extrabold text-xs">
-                        AI
-                    </div>
+            <!-- ============================================================ -->
+            <!-- SECTION C: Watchlist & Curated Insights                      -->
+            <!-- ============================================================ -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Watchlist Items -->
+                <div class="bg-surface border border-border rounded-2xl p-6 shadow-sm flex flex-col justify-between">
                     <div>
-                        <h4 class="text-xs font-bold text-text-primary" x-text="t[lang].aiName"></h4>
-                        <p class="text-[10px] text-emerald-500" x-text="t[lang].aiOnline"></p>
+                        <div class="flex justify-between items-center mb-4">
+                            <div>
+                                <h2 class="text-xs font-bold text-text-muted uppercase tracking-wider" x-text="t[lang].watchlistTitle"></h2>
+                                <p class="text-xs text-text-primary font-semibold mt-0.5" x-text="t[lang].watchlistSubtitle"></p>
+                            </div>
+                            @if(!empty($watchlistTickers) && $agentRouteExists)
+                                <a href="{{ route('agent.workspace', ['context' => 'watchlist', 'tickers' => $watchlistTickers]) }}"
+                                    class="px-2.5 py-1 bg-accent/15 text-accent border border-accent/30 rounded-lg text-xs font-bold hover:bg-accent/25 transition"
+                                    x-text="t[lang].oneClickCopilot">
+                                </a>
+                            @endif
+                        </div>
+
+                        <div class="space-y-3 text-xs">
+                            @forelse ($watchlist['items'] ?? [] as $index => $item)
+                                <div class="p-3.5 bg-background/60 border border-border/80 rounded-xl flex items-center justify-between gap-4">
+                                    <div class="w-1/3">
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="font-extrabold text-text-primary">{{ $item['ticker'] }}</span>
+                                            @if($agentRouteExists)
+                                                <a href="{{ route('agent.workspace', ['ticker' => $item['ticker']]) }}"
+                                                    class="text-[10px] text-accent font-semibold hover:underline bg-accent/10 px-1 rounded">
+                                                    AI
+                                                </a>
+                                            @endif
+                                            @if(\Illuminate\Support\Facades\Route::has('dashboard.watchlist.destroy'))
+                                                <form method="POST" action="{{ route('dashboard.watchlist.destroy', $item['ticker']) }}" class="inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="text-[10px] text-red-400 hover:text-red-500 font-semibold ml-1" title="Remove">✕</button>
+                                                </form>
+                                            @endif
+                                        </div>
+                                        <p class="text-[10px] text-text-muted mt-0.5 truncate">{{ $item['company_name'] }}</p>
+                                        <span class="font-bold text-emerald-500 text-xs mt-1 block">
+                                            Rp {{ number_format($item['close_price'], 0, ',', '.') }}
+                                        </span>
+                                    </div>
+
+                                    <div class="w-1/3 h-10">
+                                        <canvas id="chartWatchlist-{{ $index }}"></canvas>
+                                    </div>
+
+                                    <div class="text-right w-1/3">
+                                        <span class="text-text-muted text-[10px] block truncate">{{ $item['sector'] }}</span>
+                                        <span class="text-[10px] text-text-primary block mt-1">
+                                            <span x-text="t[lang].target"></span>:
+                                            {{ $item['forward_pe'] ? number_format((float) $item['forward_pe'], 1) . 'x' : 'N/A' }}
+                                        </span>
+                                    </div>
+                                </div>
+                            @empty
+                                <div class="p-8 text-center text-text-muted bg-background/30 rounded-xl border border-border/60">
+                                    <p x-text="t[lang].emptyWatchlist"></p>
+                                    @if(\Illuminate\Support\Facades\Route::has('dashboard.watchlist.store'))
+                                        <form action="{{ route('dashboard.watchlist.store') }}" method="POST" class="mt-3 flex justify-center gap-2">
+                                            @csrf
+                                            <input type="text" name="stock_ticker" placeholder="Kode Saham (e.g. BBCA)" class="bg-background border border-border px-3 py-1.5 text-xs rounded-lg uppercase" required>
+                                            <button type="submit" class="bg-accent text-white px-3 py-1.5 text-xs rounded-lg hover:bg-accent-dim transition">+ Tambah</button>
+                                        </form>
+                                    @endif
+                                </div>
+                            @endforelse
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-t border-border flex justify-between items-center text-xs">
+                        <span class="text-text-muted text-[11px]" x-text="t[lang].monitoredCount"></span>
                     </div>
                 </div>
-                <button @click="openChat = false" class="text-text-muted hover:text-text-primary">✕</button>
+
+                <!-- Curated Insights -->
+                <div class="bg-surface border border-border rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+                    <div>
+                        <div class="flex justify-between items-center mb-4">
+                            <div>
+                                <h2 class="text-xs font-bold text-text-muted uppercase tracking-wider" x-text="t[lang].dailyInsights"></h2>
+                                <p class="text-xs text-text-primary font-semibold mt-0.5" x-text="t[lang].insightsSubtitle"></p>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3 text-xs">
+                            @forelse ($insights as $article)
+                                <div class="p-3.5 bg-background/60 border border-border/80 rounded-xl">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-[9px] font-bold px-1.5 py-0.5 bg-accent text-white rounded uppercase">
+                                            {{ $article['category'] ?? 'MACRO' }}
+                                        </span>
+                                        <span class="text-[10px] text-text-muted">
+                                            {{ !empty($article['published_at']) ? \Carbon\Carbon::parse($article['published_at'])->diffForHumans() : '' }}
+                                        </span>
+                                    </div>
+                                    <h3 class="font-bold text-text-primary text-sm mt-1">
+                                        {{ $article['title'] }}
+                                    </h3>
+                                </div>
+                            @empty
+                                <div class="p-8 text-center text-text-muted bg-background/30 rounded-xl border border-border/60">
+                                    <p x-text="t[lang].emptyInsights"></p>
+                                </div>
+                            @endforelse
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-t border-border flex justify-end items-center text-xs">
+                        <span class="text-text-muted text-[11px]">Editorial CMS &bull; Published</span>
+                    </div>
+                </div>
             </div>
 
-            <div class="flex-1 p-4 overflow-y-auto space-y-3 text-xs">
-                <div class="bg-background border border-border p-3 rounded-2xl rounded-tl-none text-text-primary"
-                    x-text="t[lang].aiWelcome"></div>
+            <!-- Floating Quick Action Button (Direct Navigation) -->
+            <div class="fixed bottom-6 right-6 z-50">
+                <a href="{{ $agentRouteExists ? route('agent.workspace') : '#' }}"
+                    class="w-14 h-14 bg-accent text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-105 transition relative border border-accent/40"
+                    title="Buka Copilot Workspace">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                    </svg>
+                    <span class="absolute top-1 right-1 w-3 h-3 bg-emerald-400 border-2 border-surface rounded-full"></span>
+                </a>
             </div>
 
-            <div class="p-3 border-t border-border bg-surface">
-                <form @submit.prevent="" class="flex items-center gap-2">
-                    <input type="text" :placeholder="t[lang].chatPlaceholder"
-                        class="flex-1 bg-background border border-border rounded-xl px-3 py-2 text-xs text-text-primary focus:outline-none">
-                    <button type="submit" class="px-3 py-2 bg-accent text-white rounded-xl text-xs font-semibold"
-                        x-text="t[lang].chatSend"></button>
-                </form>
-            </div>
         </div>
 
-        <div class="fixed bottom-6 right-6 z-50">
-            <button @click="openChat = !openChat"
-                class="w-14 h-14 bg-accent text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-105 transition relative border border-accent/40">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                </svg>
-                <span class="absolute top-1 right-1 w-3 h-3 bg-emerald-400 border-2 border-surface rounded-full"></span>
-            </button>
-        </div>
+        <!-- Script Sparklines -->
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const sparklineOptions = {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false }, tooltip: { enabled: false } },
+                    scales: { x: { display: false }, y: { display: false } },
+                    elements: {
+                        point: { radius: 0 },
+                        line: { borderWidth: 2, tension: 0.3 }
+                    }
+                };
 
-    </div>
+                const renderChart = (id, data, color, fill = true) => {
+                    const el = document.getElementById(id);
+                    if (!el) return;
+                    new Chart(el, {
+                        type: 'line',
+                        data: {
+                            labels: ['1', '2', '3', '4', '5'],
+                            datasets: [{
+                                data: data,
+                                borderColor: color,
+                                backgroundColor: fill ? color.replace(')', ', 0.1)').replace('rgb', 'rgba') : 'transparent',
+                                fill: fill
+                            }]
+                        },
+                        options: sparklineOptions
+                    });
+                };
 
-    <!-- ============================================================ -->
-    <!-- SCRIPT RENDER CHART.JS (SPARKLINE CONFIG)                   -->
-    <!-- ============================================================ -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const sparklineOptions = {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: { legend: { display: false }, tooltip: { enabled: true } },
-                scales: {
-                    x: { display: false },
-                    y: { display: false }
-                },
-                elements: {
-                    point: { radius: 0 },
-                    line: { borderWidth: 2, tension: 0.3 }
-                }
-            };
+                renderChart('chartGainer', [100, 102, 101, 104, 108], '#10b981');
+                renderChart('chartLoser', [100, 98, 97, 95, 92], '#ef4444');
+                renderChart('chartMostTraded', [50, 60, 55, 75, 70], '#6366f1');
 
-            // 1. Chart BBCA
-            new Chart(document.getElementById('chartBBCA'), {
-                type: 'line',
-                data: {
-                    labels: ['09:00', '10:00', '11:00', '13:00', '14:00', '15:00'],
-                    datasets: [{
-                        data: [9800, 9850, 9900, 9950, 10000, 10050],
-                        borderColor: '#10b981',
-                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                        fill: true
-                    }]
-                },
-                options: sparklineOptions
+                @foreach ($watchlist['items'] ?? [] as $index => $item)
+                    renderChart('chartWatchlist-{{ $index }}', [95, 96, 94, 98, 100], '#10b981', false);
+                @endforeach
             });
-
-            // 2. Chart GOTO
-            new Chart(document.getElementById('chartGOTO'), {
-                type: 'line',
-                data: {
-                    labels: ['09:00', '10:00', '11:00', '13:00', '14:00', '15:00'],
-                    datasets: [{
-                        data: [55, 54, 54, 53, 53, 52],
-                        borderColor: '#ef4444',
-                        backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                        fill: true
-                    }]
-                },
-                options: sparklineOptions
-            });
-
-            // 3. Chart TLKM
-            new Chart(document.getElementById('chartTLKM'), {
-                type: 'line',
-                data: {
-                    labels: ['09:00', '10:00', '11:00', '13:00', '14:00', '15:00'],
-                    datasets: [{
-                        data: [3830, 3840, 3820, 3850, 3840, 3850],
-                        borderColor: '#6366f1',
-                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                        fill: true
-                    }]
-                },
-                options: sparklineOptions
-            });
-
-            // 4. Chart Watchlist BBCA
-            new Chart(document.getElementById('chartWatchlistBBCA'), {
-                type: 'line',
-                data: {
-                    labels: ['1', '2', '3', '4', '5'],
-                    datasets: [{
-                        data: [9800, 9900, 9850, 10000, 10050],
-                        borderColor: '#10b981',
-                        fill: false
-                    }]
-                },
-                options: sparklineOptions
-            });
-
-            // 5. Chart Watchlist BMRI
-            new Chart(document.getElementById('chartWatchlistBMRI'), {
-                type: 'line',
-                data: {
-                    labels: ['1', '2', '3', '4', '5'],
-                    datasets: [{
-                        data: [7000, 7050, 7100, 7080, 7150],
-                        borderColor: '#10b981',
-                        fill: false
-                    }]
-                },
-                options: sparklineOptions
-            });
-        });
-    </script>
+        </script>
 @endsection

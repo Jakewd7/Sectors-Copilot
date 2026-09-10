@@ -13,23 +13,50 @@ class AgentWorkspaceController extends Controller
     public function index(Request $request): View
     {
         $userId = $request->user()->id;
+        $initialPrompt = $request->query('prompt');
+        $ticker = $request->query('ticker');
+        $context = $request->query('context');
+        $tickers = $request->query('tickers');
+
+        if (!$initialPrompt && $ticker) {
+            $initialPrompt = "Analisis prospek saham {$ticker} terkini secara teknikal dan fundamental.";
+        } elseif (!$initialPrompt && $context === 'watchlist' && $tickers) {
+            $initialPrompt = "Berikan perbandingan dan rekomendasi rotasi portofolio untuk saham berikut: {$tickers}.";
+        }
 
         $sessions = ChatSession::where('user_id', $userId)
             ->orderByDesc('is_pinned')
             ->orderByDesc('updated_at')
             ->get(['id', 'title', 'is_pinned', 'created_at']);
 
-        $activeSessionId = $request->query('session_id', optional($sessions->first())->id);
-        $activeSession = null;
+        $activeSessionId = $request->query('session_id');
 
-        if ($activeSessionId) {
-            $activeSession = ChatSession::with(['messages.stepLogs'])
-                ->where('id', $activeSessionId)
-                ->where('user_id', $userId)
-                ->first();
+        if ($initialPrompt && !$activeSessionId) {
+            $sessionTitle = $ticker
+                ? "Riset {$ticker} - " . now()->format('d M H:i')
+                : "Analisis Pasar - " . now()->format('d M H:i');
+
+            $activeSession = ChatSession::create([
+                'user_id' => $userId,
+                'title' => $sessionTitle,
+                'is_pinned' => false,
+            ]);
+
+            $activeSessionId = $activeSession->id;
+            $sessions->prepend($activeSession);
+        } else {
+            $activeSessionId = $activeSessionId ?: optional($sessions->first())->id;
+            $activeSession = null;
+
+            if ($activeSessionId) {
+                $activeSession = ChatSession::with(['messages.stepLogs'])
+                    ->where('id', $activeSessionId)
+                    ->where('user_id', $userId)
+                    ->first();
+            }
         }
 
-        return view('agent::workspace', compact('sessions', 'activeSession'));
+        return view('agent::workspace', compact('sessions', 'activeSession', 'initialPrompt', 'ticker'));
     }
 
     public function storeSession(Request $request): JsonResponse
