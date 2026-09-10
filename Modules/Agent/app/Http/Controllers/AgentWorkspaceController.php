@@ -10,9 +10,6 @@ use Illuminate\View\View;
 
 class AgentWorkspaceController extends Controller
 {
-    /**
-     * Render layar utama workspace chat split-view
-     */
     public function index(Request $request): View
     {
         $userId = $request->user()->id;
@@ -35,9 +32,6 @@ class AgentWorkspaceController extends Controller
         return view('agent::workspace', compact('sessions', 'activeSession'));
     }
 
-    /**
-     * Buat sesi riset baru
-     */
     public function storeSession(Request $request): JsonResponse
     {
         $request->validate([
@@ -53,9 +47,6 @@ class AgentWorkspaceController extends Controller
         return response()->json(['success' => true, 'session' => $session], 201);
     }
 
-    /**
-     * Muat riwayat pesan untuk sesi tertentu (AJAX Switcher)
-     */
     public function loadSession(Request $request, string $sessionId): JsonResponse
     {
         $session = ChatSession::with(['messages.stepLogs'])
@@ -69,9 +60,6 @@ class AgentWorkspaceController extends Controller
         ]);
     }
 
-    /**
-     * Pin / Unpin sesi
-     */
     public function togglePin(Request $request, string $sessionId): JsonResponse
     {
         $session = ChatSession::where('id', $sessionId)

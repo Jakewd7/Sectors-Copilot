@@ -2,11 +2,17 @@
 
 namespace Modules\Agent\Tools;
 
-use Illuminate\Support\Facades\Http;
 use Modules\Agent\Tools\Contracts\AgentToolInterface;
+use Modules\SectorsData\Services\CachedSectorsService;
+use Throwable;
 
 class CompanyFinancialsTool implements AgentToolInterface
 {
+    public function __construct(
+        protected CachedSectorsService $sectorsService
+    ) {
+    }
+
     public function getName(): string
     {
         return 'get_company_financials';
@@ -40,16 +46,20 @@ class CompanyFinancialsTool implements AgentToolInterface
     {
         $symbol = strtoupper($parameters['symbol'] ?? '');
         $period = $parameters['period'] ?? 'quarterly';
-
-        // Mapping otomatis: annual mengambil 12 kuartal (3 tahun), quarterly 4 kuartal
         $nQuarters = ($period === 'annual') ? 12 : 4;
-        $endpoint = config('agent.internal_api_base_url') . "/companies/{$symbol}/financials";
 
-        $response = Http::timeout(10)->get($endpoint, ['n_quarters' => $nQuarters]);
+        try {
+            $result = $this->sectorsService->getQuarterlyFinancials($symbol, $nQuarters);
 
-        return [
-            'endpoint' => "/companies/{$symbol}/financials?n_quarters={$nQuarters}",
-            'data' => $response->successful() ? $response->json('data') : ['error' => 'Gagal memuat keuangan ' . $symbol],
-        ];
+            return [
+                'endpoint' => "/companies/{$symbol}/financials?n_quarters={$nQuarters}",
+                'data' => $result['data'] ?? [],
+            ];
+        } catch (Throwable $e) {
+            return [
+                'endpoint' => "/companies/{$symbol}/financials?n_quarters={$nQuarters}",
+                'data' => ['error' => 'Gagal memuat keuangan ' . $symbol . ': ' . $e->getMessage()],
+            ];
+        }
     }
 }

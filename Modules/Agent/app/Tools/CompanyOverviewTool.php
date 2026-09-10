@@ -2,11 +2,16 @@
 
 namespace Modules\Agent\Tools;
 
-use Illuminate\Support\Facades\Http;
 use Modules\Agent\Tools\Contracts\AgentToolInterface;
+use Modules\SectorsData\Services\CachedSectorsService;
 
 class CompanyOverviewTool implements AgentToolInterface
 {
+    public function __construct(
+        protected CachedSectorsService $sectorsService
+    ) {
+    }
+
     public function getName(): string
     {
         return 'get_company_overview';
@@ -34,13 +39,19 @@ class CompanyOverviewTool implements AgentToolInterface
     public function execute(array $parameters): array
     {
         $symbol = strtoupper($parameters['symbol'] ?? '');
-        $endpoint = config('agent.internal_api_base_url') . "/companies/{$symbol}/overview";
 
-        $response = Http::timeout(10)->get($endpoint);
+        try {
+            $result = $this->sectorsService->getCompanyOverview($symbol);
 
-        return [
-            'endpoint' => "/companies/{$symbol}/overview",
-            'data' => $response->successful() ? $response->json('data') : ['error' => 'Gagal mengambil data emiten ' . $symbol],
-        ];
+            return [
+                'endpoint' => "/companies/{$symbol}/overview",
+                'data' => $result['data'] ?? [],
+            ];
+        } catch (\Throwable $e) {
+            return [
+                'endpoint' => "/companies/{$symbol}/overview",
+                'data' => ['error' => 'Gagal mengambil data emiten ' . $symbol . ': ' . $e->getMessage()],
+            ];
+        }
     }
 }

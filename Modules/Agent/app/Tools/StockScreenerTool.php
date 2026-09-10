@@ -2,11 +2,17 @@
 
 namespace Modules\Agent\Tools;
 
-use Illuminate\Support\Facades\Http;
 use Modules\Agent\Tools\Contracts\AgentToolInterface;
+use Modules\SectorsData\Services\CachedSectorsService;
+use Throwable;
 
 class StockScreenerTool implements AgentToolInterface
 {
+    public function __construct(
+        protected CachedSectorsService $sectorsService
+    ) {
+    }
+
     public function getName(): string
     {
         return 'screen_stocks';
@@ -33,12 +39,22 @@ class StockScreenerTool implements AgentToolInterface
 
     public function execute(array $parameters): array
     {
-        $endpoint = config('agent.internal_api_base_url') . "/screener";
-        $response = Http::timeout(12)->get($endpoint, array_filter($parameters));
+        $filters = array_filter($parameters);
+        $orderBy = $filters['order_by'] ?? '-market_cap';
+        $limit = (int) ($filters['limit'] ?? 5);
 
-        return [
-            'endpoint' => '/screener',
-            'data' => $response->successful() ? $response->json('data') : ['error' => 'Tidak ada saham memenuhi kriteria screening'],
-        ];
+        try {
+            $result = $this->sectorsService->screenStocks($filters, $orderBy, $limit);
+
+            return [
+                'endpoint' => '/screener',
+                'data' => $result['data'] ?? [],
+            ];
+        } catch (Throwable $e) {
+            return [
+                'endpoint' => '/screener',
+                'data' => ['error' => 'Gagal menyaring saham: ' . $e->getMessage()],
+            ];
+        }
     }
 }

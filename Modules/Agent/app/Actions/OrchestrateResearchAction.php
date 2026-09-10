@@ -5,6 +5,11 @@ namespace Modules\Agent\Actions;
 use App\Models\AgentStepLog;
 use App\Models\ChatMessage;
 use App\Models\ChatSession;
+use Gemini\Data\Content;
+use Gemini\Data\FunctionResponse;
+use Gemini\Data\Part;
+use Gemini\Data\Tool;
+use Gemini\Enums\Role;
 use Illuminate\Support\Str;
 use Modules\Agent\Services\GeminiClientService;
 use Modules\Agent\Tools\CompanyFinancialsTool;
@@ -30,13 +35,11 @@ class OrchestrateResearchAction
 
     public function execute(ChatSession $session, string $prompt, callable $sseCallback): ChatMessage
     {
-        // 1. Simpan pesan pengguna
         $session->messages()->create([
             'role' => 'user',
             'content' => $prompt,
         ]);
 
-        // 2. Buat placeholder record pesan assistant
         /** @var ChatMessage $assistantMessage */
         $assistantMessage = $session->messages()->create([
             'role' => 'assistant',
@@ -44,7 +47,6 @@ class OrchestrateResearchAction
             'structured_payload' => null,
         ]);
 
-        // Kirim event Planning ke Inspector UI
         $this->logStep($assistantMessage->id, 'planning', null, null, 'pending', ['intent' => $prompt]);
         $sseCallback('step_progress', [
             'step' => 'planning',
@@ -52,83 +54,92 @@ class OrchestrateResearchAction
             'message' => 'Mengidentifikasi intensi riset dan merencanakan analisis data emiten...',
         ]);
 
-        // Bangun riwayat chat sebelumnya untuk Context Memory
         $history = $session->messages()
             ->where('id', '!=', $assistantMessage->id)
             ->latest('created_at')
             ->take(6)
             ->get()
             ->reverse()
-            ->map(fn($msg) => [
-                'role' => $msg->role === 'assistant' ? 'model' : 'user',
-                'parts' => [['text' => $msg->content ?? '']],
-            ])
+            ->map(fn($msg) => Content::parse(
+                part: $msg->content ?? '',
+                role: $msg->role === 'assistant' ? Role::MODEL : Role::USER
+            ))
+            ->values()
             ->toArray();
 
         $tools = $this->geminiService->getRegisteredTools();
         $toolDeclarations = $this->geminiService->getToolDeclarations();
 
+        $systemInstructionText = "Anda adalah AI Research Copilot pasar modal Indonesia (IDX) yang presisi, objektif, dan faktual. " .
+            "Gunakan tools yang tersedia untuk mengambil data bursa terkini sebelum menjawab pertanyaan emiten. " .
+            "Sajikan narasi fundamental yang tajam dan gunakan data aktual dari tools.";
+
         $chat = $this->geminiService->getClient()
             ->generativeModel(model: $this->geminiService->getModel())
-            ->withSystemInstruction(
-                "Anda adalah AI Research Copilot pasar modal Indonesia (IDX) yang presisi, objektif, dan faktual. " .
-                "Gunakan tools yang tersedia untuk mengambil data bursa terkini sebelum menjawab pertanyaan emiten. " .
-                "Sajikan narasi fundamental yang tajam dan gunakan data aktual dari tools."
-            )
+            ->withSystemInstruction(Content::parse($systemInstructionText))
+            ->withTool(new Tool(functionDeclarations: $toolDeclarations))
             ->startChat(history: $history);
 
-        // Turn pertama LLM
         $startTime = microtime(true);
-        $response = $chat->sendMessage($prompt, ['tools' => [['function_declarations' => $toolDeclarations]]]);
+        $response = $chat->sendMessage($prompt);
 
         $collectedPayloads = [];
         $maxLoops = 4;
         $currentLoop = 0;
 
-        // Multi-Step Execution Loop
-        while ($response->functionCalls() && $currentLoop < $maxLoops) {
+        while (
+            isset($response->parts()[0]) &&
+            $response->parts()[0]->functionCall !== null &&
+            $currentLoop < $maxLoops
+        ) {
             $currentLoop++;
-            $functionCall = $response->functionCalls()[0];
+            $functionCall = $response->parts()[0]->functionCall;
             $toolName = $functionCall->name;
             $toolArgs = (array) $functionCall->args;
 
-            if (isset($tools[$toolName])) {
-                $sseCallback('step_progress', [
-                    'step' => 'tool_execution',
-                    'tool' => $toolName,
-                    'status' => 'running',
-                    'message' => "Memanggil Sectors API via tool [{$toolName}]...",
-                ]);
-
-                $toolResult = $tools[$toolName]->execute($toolArgs);
-                $endpoint = $toolResult['endpoint'] ?? null;
-                $data = $toolResult['data'] ?? [];
-
-                $duration = (int) round((microtime(true) - $startTime) * 1000);
-                $this->logStep($assistantMessage->id, 'tool_execution', $toolName, $endpoint, 'success', $data, null, $duration);
-                $collectedPayloads[$toolName] = $data;
-
-                $sseCallback('step_progress', [
-                    'step' => 'tool_execution',
-                    'tool' => $toolName,
-                    'status' => 'success',
-                    'endpoint' => $endpoint,
-                    'message' => "Data berhasil diperoleh dari {$endpoint}.",
-                ]);
-
-                // Kirim kembali hasil tool ke Gemini untuk sintesis
-                $response = $chat->sendMessage([
-                    'functionResponse' => [
-                        'name' => $toolName,
-                        'response' => ['result' => $data],
-                    ],
-                ]);
-            } else {
+            if (!isset($tools[$toolName])) {
                 break;
             }
+
+            $sseCallback('step_progress', [
+                'step' => 'tool_execution',
+                'tool' => $toolName,
+                'status' => 'running',
+                'message' => "Memanggil Sectors API via tool [{$toolName}]...",
+            ]);
+
+            $toolResult = $tools[$toolName]->execute($toolArgs);
+            $endpoint = $toolResult['endpoint'] ?? null;
+            $data = $toolResult['data'] ?? [];
+
+            $duration = (int) round((microtime(true) - $startTime) * 1000);
+            $this->logStep($assistantMessage->id, 'tool_execution', $toolName, $endpoint, 'success', $data, null, $duration);
+            $collectedPayloads[$toolName] = $data;
+
+            $sseCallback('step_progress', [
+                'step' => 'tool_execution',
+                'tool' => $toolName,
+                'status' => 'success',
+                'endpoint' => $endpoint,
+                'message' => "Data berhasil diperoleh dari {$endpoint}.",
+                'payload' => [$toolName => $data],
+            ]);
+
+            $functionResponse = new Content(
+                parts: [
+                    new Part(
+                        functionResponse: new FunctionResponse(
+                            name: $toolName,
+                            response: ['result' => $data]
+                        )
+                    )
+                ],
+                role: Role::USER
+            );
+
+            $response = $chat->sendMessage($functionResponse);
         }
 
-        // Tahap Sintesis Akhir
         $sseCallback('step_progress', [
             'step' => 'synthesis',
             'status' => 'running',
@@ -138,14 +149,19 @@ class OrchestrateResearchAction
         $finalText = $response->text();
         $finalContentWithDisclaimer = $this->disclaimerAction->execute($finalText);
 
-        // 3. Format payload terstruktur untuk SSE dan PostgreSQL JSONB
+        $sseCallback('token', [
+            'text' => $finalContentWithDisclaimer,
+        ]);
+
         $structuredPayload = !empty($collectedPayloads) ? [
             'widget_type' => $this->detectWidgetType($collectedPayloads),
             'metrics' => $this->formatMetrics($collectedPayloads),
             'raw' => $collectedPayloads,
+            'get_company_overview' => $collectedPayloads['get_company_overview'] ?? null,
+            'get_sector_peers' => $collectedPayloads['get_sector_peers'] ?? null,
+            'screen_stocks' => $collectedPayloads['stock_screener'] ?? null,
         ] : null;
 
-        // Perbarui record chat assistant
         $assistantMessage->update([
             'content' => $finalContentWithDisclaimer,
             'structured_payload' => $structuredPayload,
@@ -153,10 +169,15 @@ class OrchestrateResearchAction
 
         $this->logStep($assistantMessage->id, 'synthesis', null, null, 'success', ['summary_length' => strlen($finalContentWithDisclaimer)]);
 
-        // Kirim event selesai & payload terstruktur ke browser
         if ($structuredPayload !== null) {
-            $sseCallback('structured_payload', $structuredPayload);
+            $sseCallback('payload', $structuredPayload);
         }
+
+        $sseCallback('step_progress', [
+            'step' => 'synthesis',
+            'status' => 'success',
+            'message' => 'Riset selesai dan matriks valuasi diperbarui.',
+        ]);
 
         $sseCallback('done', [
             'message_id' => $assistantMessage->id,
@@ -166,9 +187,6 @@ class OrchestrateResearchAction
         return $assistantMessage;
     }
 
-    /**
-     * Mendeteksi jenis widget UI berdasarkan payload tool yang dieksekusi.
-     */
     protected function detectWidgetType(array $collectedPayloads): string
     {
         if (isset($collectedPayloads['stock_screener'])) {
@@ -183,21 +201,17 @@ class OrchestrateResearchAction
             return 'financial_matrix';
         }
 
-        if (isset($collectedPayloads['company_overview'])) {
+        if (isset($collectedPayloads['get_company_overview']) || isset($collectedPayloads['company_overview'])) {
             return 'company_overview';
         }
 
         return 'generic';
     }
 
-    /**
-     * Ekstraksi metrik-metrik kunci dari respon API agar siap dirender oleh kartu metrik frontend.
-     */
     protected function formatMetrics(array $collectedPayloads): array
     {
         $metrics = [];
 
-        // Ambil metrik dari Company Financials jika ada
         if (isset($collectedPayloads['company_financials'])) {
             $fin = $collectedPayloads['company_financials'];
             $metrics['pe_ratio'] = $fin['pe_ratio'] ?? $fin['pe'] ?? null;
@@ -208,9 +222,8 @@ class OrchestrateResearchAction
             $metrics['debt_to_equity'] = $fin['debt_to_equity'] ?? $fin['der'] ?? null;
         }
 
-        // Ambil metrik dari Company Overview jika ada
-        if (isset($collectedPayloads['company_overview'])) {
-            $overview = $collectedPayloads['company_overview'];
+        $overview = $collectedPayloads['get_company_overview'] ?? $collectedPayloads['company_overview'] ?? null;
+        if ($overview) {
             $metrics['symbol'] = $overview['symbol'] ?? $overview['ticker'] ?? null;
             $metrics['company_name'] = $overview['name'] ?? $overview['company_name'] ?? null;
             $metrics['market_cap'] = $overview['market_cap'] ?? null;
@@ -219,7 +232,6 @@ class OrchestrateResearchAction
             $metrics['last_price'] = $overview['price'] ?? $overview['last_price'] ?? null;
         }
 
-        // Filter null values agar payload tetap ringkas
         return array_filter($metrics, fn($value) => !is_null($value));
     }
 
