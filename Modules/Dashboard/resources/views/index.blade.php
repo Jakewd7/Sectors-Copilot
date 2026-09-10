@@ -81,7 +81,7 @@
                 insightsSubtitle: 'Artikel Kurasi & Opini Analis (CMS Admin)',
                 macroTag: 'WAWASAN MAKRO',
                 articleTitle: 'Prospek Sektor Perbankan Kuartal III Pasca Pengumuman Suku Bunga BI',
-                articleDesc: 'BBCA dan BMRI menunjukkan performa positif berkat rasio NPL yang tetap    aga baik...',
+                articleDesc: 'BBCA dan BMRI menunjukkan performa positif berkat rasio NPL yang tetap terjaga baik...',
                 byAuthor: 'Oleh: Tim Chief Economist',
                 readFull: 'Baca Artikel Lengkap →',
                 aiName: 'Gemini Investment Copilot',
@@ -101,7 +101,7 @@
             <div class="flex items-center gap-2">
                 <h1 class="text-2xl font-bold text-text-primary tracking-tight">
                     <span x-text="t[lang].welcome"></span>{{ auth()->check() ? ', ' . auth()->user()->name : '' }}
-                </h1>
+            </h1>
                 <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-accent/15 text-accent border border-accent/30" x-text="t[lang].proInvestor"></span>
             </div>
             <p class="text-xs text-text-muted mt-1" x-text="t[lang].subtitle"></p>
@@ -114,19 +114,24 @@
                 <svg class="w-4 h-4 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
                     </svg>
-                </div>
-                <h2 class="font-semibold text-text-primary group-hover:text-accent transition">Chat Workspace</h2>
-                <p class="text-sm text-text-muted mt-1">Research equities with the AI copilot.</p>
-            </a>
+                <span x-text="lang === 'en' ? 'EN ➔ ID' : 'ID ➔ EN'"></span>
+            </button>
 
-            <!-- Admin Panel -->
-            <a href="{{ route('admin.users.index') }}"
-               class="group bg-surface border border-border rounded-2xl p-6 hover:border-accent-dim transition">
-                <div class="w-11 h-11 rounded-xl bg-accent/15 border border-accent/30 text-accent flex items-center justify-center mb-4">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.427 1.756-2.925 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            <div class="hidden md:flex items-center gap-3 bg-background/80 backdrop-blur px-3.5 py-2 rounded-xl border border-border text-xs">
+                <span class="text-text-muted" x-text="t[lang].marketSentiment"></span>
+                <div class="flex items-center gap-1.5 font-semibold text-emerald-500">
+                    <span class="relative flex h-2 w-2">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    </span>
+                    <span x-text="t[lang].bullishStatus"></span>
+                </div>
+            </div>
+            
+            <button @click="openChat = true" 
+                    class="px-4 py-2.5 bg-accent text-white rounded-xl text-xs font-semibold hover:bg-accent-dim transition flex items-center gap-2 shadow-lg shadow-accent/20">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                     </svg>
                 </div>
                 <h2 class="font-semibold text-text-primary group-hover:text-accent transition">Admin Panel</h2>
