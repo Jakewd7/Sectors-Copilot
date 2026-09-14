@@ -24,7 +24,9 @@
         <env name="BROADCAST_CONNECTION" value="null"/>
         <env name="CACHE_STORE" value="array"/>
         <env name="DB_CONNECTION" value="pgsql"/>
-        <env name="DB_DATABASE" value="copilot_db"/>
+        <!-- Dedicated TEST database: RefreshDatabase runs migrate:fresh here,
+             NEVER on the dev database (copilot_db) — keeps dev logins intact. -->
+        <env name="DB_DATABASE" value="copilot_db_test"/>
         <env name="DB_URL" value=""/>
         <env name="DB_USERNAME" value="postgres"/>
         <env name="MAIL_MAILER" value="array"/>

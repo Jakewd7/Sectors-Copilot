@@ -1,0 +1,152 @@
+/* ============================================================
+   Preline semantic-token bridge — maps Preline's design-token
+   classes to the Sectors Copilot pastel-green theme (app.css).
+   Source tokens observed in Preline v4.2.0 blocks:
+   card, card-line, layer, layer-line, layer-hover, layer-focus,
+   layer-foreground, line-2, line-3, table-line, surface-4,
+   foreground, foreground-inverse, muted-foreground-1/2,
+   primary, primary-line, primary-hover, primary-focus,
+   primary-active, primary-foreground, primary-checked
+   ============================================================ */
+
+/* Root override: point Preline's --primary ramp at OUR accent family.
+   Placed on :root/.dark so it beats Preline's theme.css (blue) by order. */
+:root,
+.dark {
+    --primary: var(--theme-accent);
+    --primary-line: transparent;
+    --primary-foreground: var(--theme-base);
+    --primary-hover: var(--theme-accent-dim);
+    --primary-focus: var(--theme-accent-dim);
+    --primary-active: var(--theme-accent-dim);
+    --primary-checked: var(--theme-accent);
+}
+
+html:not(.dark) {
+    --primary: var(--theme-accent);
+    --primary-line: transparent;
+    --primary-foreground: #ffffff;
+    --primary-hover: var(--theme-accent-dim);
+    --primary-focus: var(--theme-accent-dim);
+    --primary-active: var(--theme-accent-dim);
+    --primary-checked: var(--theme-accent);
+}
+
+@layer components {
+    /* --- Surfaces --- */
+    .bg-card { background-color: var(--theme-surface); }
+    .bg-layer { background-color: var(--theme-base); }
+    /* Form controls sit on cards: slightly lighter/darker than the card surface
+       so the field edge is visible without relying on the border alone. */
+    .bg-layer-hover:hover { background-color: var(--theme-hover); }
+    .bg-layer-hover\/60:hover { background-color: color-mix(in srgb, var(--theme-hover) 60%, transparent); }
+    .focus\:bg-layer-focus:focus { background-color: var(--theme-hover); }
+    .bg-surface { background-color: var(--theme-surface); }
+    .bg-surface-4 { background-color: var(--theme-border); }
+
+    /* --- Borders --- */
+    .border-card-line { border-color: var(--theme-border); }
+    .border-layer-line { border-color: var(--theme-border); }
+    .border-layer-line:hover { border-color: var(--theme-focus); }
+    /* Form field borders: stronger than dividers so fields don't melt into the card */
+    .form-field { border-color: var(--theme-field-border); }
+    .form-field:hover { border-color: var(--theme-focus); }
+    .border-line-2 { border-color: var(--theme-border); }
+    .border-line-3 { border-color: var(--theme-border); }
+    .before\:border-line-2::before,
+    .after\:border-line-2::after { border-color: var(--theme-border); }
+
+    /* --- Dividers (tables) --- */
+    .divide-table-line > :not([hidden]) ~ :not([hidden]) {
+        border-color: var(--theme-border);
+    }
+
+    /* --- Text --- */
+    .text-foreground { color: var(--theme-text-primary); }
+    .text-layer-foreground { color: var(--theme-text-primary); }
+    .text-foreground-inverse { color: var(--theme-base); }
+    .text-muted-foreground-1 { color: var(--theme-text-muted); }
+    .text-muted-foreground-2 { color: var(--theme-text-muted); }
+    .placeholder\:text-muted-foreground-1::placeholder { color: var(--theme-placeholder); }
+
+    /* --- Primary (accent) family --- */
+    .text-primary { color: var(--theme-accent-dim); }
+    .bg-primary { background-color: var(--theme-accent); }
+    .bg-primary-hover:hover { background-color: var(--theme-accent-dim); }
+    .hover\:bg-primary-hover:hover { background-color: var(--theme-accent-dim); }
+    .hover\:text-primary-hover:hover { color: var(--theme-accent-dim); }
+    .focus\:bg-primary-focus:focus { background-color: var(--theme-accent-dim); }
+    .focus\:text-primary-focus:focus { color: var(--theme-accent-dim); }
+    .text-primary-active { color: var(--theme-accent); }
+    .hs-tab-active\:text-primary-active.hs-tab-active { color: var(--theme-accent); }
+    .hs-tab-active\:font-semibold.hs-tab-active { font-weight: 600; }
+    .hs-tab-active\:after\:bg-primary-active.hs-tab-active::after {
+        background-color: var(--theme-accent);
+    }
+    .border-primary-line { border-color: var(--theme-accent); }
+    .focus\:border-primary-focus:focus { border-color: var(--theme-focus); }
+    .focus\:ring-primary-focus:focus {
+        --tw-ring-color: color-mix(in srgb, var(--theme-accent) 20%, transparent);
+    }
+    .text-primary-foreground { color: var(--theme-base); }
+    .html:not(.dark) .text-primary-foreground { color: #ffffff; }
+    .checked\:bg-primary-checked:checked { background-color: var(--theme-accent); }
+    .checked\:border-primary-checked:checked { border-color: var(--theme-accent); }
+}
+/* --- Form field control (bg + strong border + elevated shadow) ---
+   Mirrors the auth-page field look: distinct fill, clearly visible
+   border, drop shadow to lift the field off the card, plus a subtle
+   inset shadow for a "pressed-in" input feel. Works on any card. */
+.bg-form-field {
+    background-color: var(--theme-field);
+    border-color: var(--theme-field-border);
+    box-shadow:
+        0 1px 2px rgb(0 0 0 / 0.08),
+        inset 0 1px 2px rgb(0 0 0 / 0.04);
+}
+.form-field-border { border-color: var(--theme-field-border); }
+.bg-form-field:hover {
+    border-color: var(--theme-focus);
+}
+.dark .bg-form-field {
+    background-color: var(--theme-field);
+    box-shadow:
+        0 1px 2px rgb(0 0 0 / 0.35),
+        inset 0 1px 2px rgb(0 0 0 / 0.25);
+}
+
+/* --- Auth form field: elevated look (fill + border + inset shadow) ---
+   Inputs must contrast with BOTH the page background and the card surface. */
+.bg-auth-field {
+    background-color: var(--theme-field);
+    border-color: var(--theme-field-border);
+    box-shadow:
+        0 1px 2px rgb(0 0 0 / 0.08),
+        inset 0 1px 2px rgb(0 0 0 / 0.04);
+}
+.bg-auth-field:hover {
+    border-color: var(--theme-focus);
+}
+.dark .bg-auth-field {
+    background-color: var(--theme-field);
+    box-shadow:
+        0 1px 2px rgb(0 0 0 / 0.35),
+        inset 0 1px 2px rgb(0 0 0 / 0.25);
+}
+
+/* --- Custom select (form-select): native arrow replaced by a themed chevron ---
+   appearance-none removes the browser default arrow; the chevron is an inline
+   SVG data-URI using currentColor via a fixed muted tone. */
+.form-select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    padding-right: 2.5rem;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%237c8c82' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 1.1rem 1.1rem;
+}
+.dark .form-select {
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a9ddbe' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+}

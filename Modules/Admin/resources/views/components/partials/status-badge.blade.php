@@ -3,10 +3,13 @@
     $status = $status ?? 'active';
 @endphp
 
+{{-- Preline badge pattern (rounded-full, bg + foreground pairs).
+     Active = solid primary; Inactive = solid rose for strong contrast
+     against both dark and light backgrounds. --}}
 @if ($status === 'active')
-    <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-semibold bg-accent/15 text-accent">Active</span>
-@elseif ($status === 'suspended')
-    <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-semibold bg-danger/15 text-danger">Suspended</span>
+    <span class="inline-flex items-center gap-x-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-primary text-primary-foreground">Active</span>
+@elseif ($status === 'inactive' || $status === 'suspended')
+    <span class="inline-flex items-center gap-x-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-rose-600 text-white">Inactive</span>
 @else
-    <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-semibold bg-border text-text-muted">{{ ucfirst($status) }}</span>
+    <span class="inline-flex items-center gap-x-1.5 py-1.5 px-3 rounded-full text-xs font-medium bg-surface-4 text-foreground-inverse">{{ ucfirst($status) }}</span>
 @endif

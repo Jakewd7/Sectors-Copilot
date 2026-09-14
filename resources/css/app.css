@@ -1,23 +1,110 @@
-@import 'tailwindcss';
+@import "tailwindcss";
+@import "../../node_modules/preline/variants.css";
+
+/* Preline Themes */
+@import "../../node_modules/preline/css/themes/theme.css";
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
+@source '../../Modules/**/resources/views/**/*.blade.php';
+@source "../../node_modules/preline/dist/*.js";
 
 /* Hide elements until Alpine.js has initialized (prevents modal flash) */
 [x-cloak] {
     display: none !important;
 }
 
-@theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+@custom-variant dark (&:where(.dark, .dark *));
 
-    --color-base: #0d120f;
-    --color-surface: #141b17;
-    --color-border: #233029;
-    --color-accent: #a9ddbe;
-    --color-accent-dim: #7fb896;
-    --color-text-primary: #e9edea;
-    --color-text-muted: #7c8c82;
+@theme {
+    --font-sans:
+        "Instrument Sans", ui-sans-serif, system-ui, sans-serif,
+        "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+        "Noto Color Emoji";
+
+    /* ===== SEMANTIC TOKENS (app design system) ===== */
+    /* Both themes share the same pastel-green accent family.
+       Values are overridden per-theme below via :root / .dark selectors. */
+
+    --color-base: var(--theme-base);
+    --color-surface: var(--theme-surface);
+    --color-border: var(--theme-border);
+    --color-accent: var(--theme-accent);
+    --color-accent-dim: var(--theme-accent-dim);
+    --color-text-primary: var(--theme-text-primary);
+    --color-text-muted: var(--theme-text-muted);
     --color-danger: #e2a5a0;
 }
+
+/* ===== DARK THEME (default baseline) ===== */
+/* NOTE: do NOT use bare :root here — it would force dark tokens in light mode.
+   Dark applies when <html> has .dark, or by default when no class is set. */
+html.dark {
+    --theme-base: #0d120f;
+    --theme-surface: #141b17;
+    --theme-border: #233029;
+    --theme-accent: #a9ddbe;
+    --theme-accent-dim: #7fb896;
+    --theme-text-primary: #e9edea;
+    --theme-text-muted: #7c8c82;
+    --theme-placeholder: #4a554e;
+    --theme-hover: #1a231e;
+    --theme-focus: #4d6b57;
+    /* Form fields: lighter fill + high-contrast border against dark cards */
+    --theme-field: #1e2923;
+    --theme-field-border: #465f51;
+}
+
+/* Default = dark baseline (when no class present at all) */
+html:not(.light):not(.dark) {
+    --theme-base: #0d120f;
+    --theme-surface: #141b17;
+    --theme-border: #233029;
+    --theme-accent: #a9ddbe;
+    --theme-accent-dim: #7fb896;
+    --theme-text-primary: #e9edea;
+    --theme-text-muted: #7c8c82;
+    --theme-placeholder: #4a554e;
+    --theme-hover: #1a231e;
+    --theme-focus: #4d6b57;
+    --theme-field: #1c2620;
+    --theme-field-border: #33463b;
+}
+
+/* ===== LIGHT THEME ===== */
+html.light,
+html:not(.dark) {
+    --theme-base: #f4f7f5;
+    --theme-surface: #ffffff;
+    --theme-border: #dbe5df;
+    --theme-accent: #34a06a;
+    --theme-accent-dim: #2b8759;
+    --theme-text-primary: #1a2620;
+    --theme-text-muted: #64756c;
+    --theme-placeholder: #9aa8a0;
+    --theme-hover: #e8efe9;
+    --theme-focus: #34a06a;
+    /* Form fields: white fill + high-contrast border against light cards */
+    --theme-field: #ffffff;
+    --theme-field-border: #9fb3a8;
+}
+
+body {
+    background-color: var(--theme-base);
+    color: var(--theme-text-primary);
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease;
+}
+
+/* Placeholder color follows the active theme */
+::placeholder {
+    color: var(--theme-placeholder);
+    opacity: 1;
+}
+
+/* ===== Preline pastel-green theme (light + dark token sets) ===== */
+@import "./themes/pastel-green.css";
+
+/* Map Preline semantic-token classes onto the app theme */
+@import "./preline-bridge.css";

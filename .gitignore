@@ -27,6 +27,5 @@ Homestead.yaml
 Thumbs.db
 
 # AI assistant local configs & notes (not part of the app)
-/.kiro/
 IDEA.md
 boost.json

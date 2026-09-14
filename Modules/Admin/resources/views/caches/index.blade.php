@@ -12,41 +12,52 @@
 
     <!-- Dummy data comes from AdminPageController (TODO: connect to backend) -->
     <div class="space-y-8">
-        <!-- Stats row (A2: API credits shown here too, dummy + TODO) -->
-        <div class="flex flex-wrap gap-8">
+        <!-- Stats row (A2: API credits shown here too, dummy + TODO) — Preline card-stats -->
+        <div class="flex flex-wrap gap-4">
             @foreach ($stats as $stat)
                 <x-admin::partials.stat-card :label="$stat['label']" :value="$stat['value']" />
             @endforeach
             <x-admin::partials.stat-card label="Cache hit rate" value="68%" />
         </div>
 
-        <!-- Cache table -->
-        <div>
-            <h2 class="text-sm font-semibold text-text-primary mb-4">Cache per company / sector</h2>
+        <!-- LLM token usage (Ollama-cloud-style usage bar, dummy data + TODO) -->
+        <x-admin::partials.token-usage-card
+            title="LLM token usage — daily"
+            subtitle="Tokens consumed by the research agent across all sessions today."
+            :label="$llmUsage['daily']['label']"
+            :percent="$llmUsage['daily']['percent']"
+            :meta="$llmUsage['daily']['meta']"
+            :models="$llmUsage['daily']['models']" />
 
-            <div class="bg-surface border border-border rounded-xl overflow-hidden">
-                <table class="w-full text-sm text-left">
-                    <thead>
-                        <tr class="text-text-muted text-xs border-b border-border">
-                            <th class="px-6 py-4 font-medium">Cache key</th>
-                            <th class="px-6 py-4 font-medium">Expires at</th>
-                            <th class="px-6 py-4 font-medium text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-border/50">
-                        @foreach ($entries as $entry)
-                            <tr class="hover:bg-border/30 transition">
-                                <td class="px-6 py-4 font-mono font-semibold text-text-primary">{{ $entry['key'] }}</td>
-                                <td class="px-6 py-4 text-text-muted">{{ $entry['expires_at'] }}</td>
-                                <td class="px-6 py-4 text-right">
-                                    <!-- Flush per-key only (A3); action is a dummy for now -->
-                                    <x-admin::partials.action-button action="flush"
-                                        @click="alert('TODO: connect per-key flush to backend')" />
-                                </td>
+        <!-- Cache table (Preline tables pattern) -->
+        <div>
+            <h2 class="text-sm font-semibold text-foreground mb-4">Cache per company / sector</h2>
+
+            <div class="bg-layer border border-layer-line rounded-xl overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-table-line">
+                        <thead>
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-muted-foreground-1 uppercase">Cache key</th>
+                                <th scope="col" class="px-6 py-3 text-start text-xs font-medium text-muted-foreground-1 uppercase">Expires at</th>
+                                <th scope="col" class="px-6 py-3 text-end text-xs font-medium text-muted-foreground-1 uppercase">Actions</th>
                             </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody class="divide-y divide-table-line">
+                            @foreach ($entries as $entry)
+                                <tr class="hover:bg-layer-hover/60 transition">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground font-mono">{{ $entry['key'] }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground-1">{{ $entry['expires_at'] }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-end">
+                                        <!-- Flush per-key only (A3); action is a dummy for now -->
+                                        <x-admin::partials.action-button action="flush"
+                                            @click="alert('TODO: connect per-key flush to backend')" />
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
