@@ -8,9 +8,16 @@
         <x-admin::partials.tab-link :href="route('admin.insights.index')" :active="$current === 'insights'">Market Article</x-admin::partials.tab-link>
         <x-admin::partials.tab-link :href="route('admin.prompts.index')" :active="$current === 'prompts'">Prompt starter</x-admin::partials.tab-link>
         <x-admin::partials.tab-link :href="route('admin.caches.index')" :active="$current === 'caches'">Cache</x-admin::partials.tab-link>
+        <x-admin::partials.tab-link :href="route('admin.roles.index')" :active="$current === 'roles'">Roles & Access</x-admin::partials.tab-link>
     </x-slot:navigation>
 
     <div class="space-y-6" x-data="insightEditor()">
+        <!-- Page heading -->
+        <div>
+            <h1 class="text-2xl font-bold text-foreground tracking-tight">Market Articles</h1>
+            <p class="text-sm text-muted-foreground-1 mt-1">Publish market insight articles shown to users across the app.</p>
+        </div>
+
         <!-- Stats + Add article button on one line (same pattern as Users page) -->
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div class="flex flex-wrap gap-4">

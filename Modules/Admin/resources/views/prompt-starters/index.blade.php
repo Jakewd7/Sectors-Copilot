@@ -8,10 +8,17 @@
         <x-admin::partials.tab-link :href="route('admin.insights.index')" :active="$current === 'insights'">Market Article</x-admin::partials.tab-link>
         <x-admin::partials.tab-link :href="route('admin.prompts.index')" :active="$current === 'prompts'">Prompt starter</x-admin::partials.tab-link>
         <x-admin::partials.tab-link :href="route('admin.caches.index')" :active="$current === 'caches'">Cache</x-admin::partials.tab-link>
+        <x-admin::partials.tab-link :href="route('admin.roles.index')" :active="$current === 'roles'">Roles & Access</x-admin::partials.tab-link>
     </x-slot:navigation>
 
     <!-- Dummy data comes from AdminPageController (TODO: connect to backend) -->
     <div class="space-y-6" x-data="{ open: false, editingId: null, form: { text: '' } }">
+        <!-- Page heading -->
+        <div>
+            <h1 class="text-2xl font-bold text-foreground tracking-tight">Prompt Starters</h1>
+            <p class="text-sm text-muted-foreground-1 mt-1">Curate the suggested research prompts users see in the agent workspace.</p>
+        </div>
+
         <div class="flex justify-end">
             <!-- Preline solid button -->
             <button type="button" @click="editingId = null; form.text = ''; open = true"

@@ -118,4 +118,107 @@ class AdminPageController extends Controller
 
         return view('admin::caches.index', compact('stats', 'entries', 'llmUsage'));
     }
+
+    /**
+     * Roles & Access Control index — mirrors the Spatie roles/permissions tables.
+     * DUMMY data mirrors the seeded DB state (4 roles, 28 permissions).
+     * TODO(backend): replace with Role::withCount('permissions')->paginate().
+     */
+    public function roles(): View
+    {
+        $allRoles = [
+            ['id' => 1, 'name' => 'investor', 'guard' => 'web', 'permissions' => 17],
+            ['id' => 2, 'name' => 'analyst', 'guard' => 'web', 'permissions' => 16],
+            ['id' => 3, 'name' => 'admin', 'guard' => 'web', 'permissions' => 14],
+            ['id' => 4, 'name' => 'super-admin', 'guard' => 'web', 'permissions' => 28],
+        ];
+
+        // Simple query-string pagination over the dummy set.
+        // TODO(backend): swap for ->paginate(5) from the backend.
+        $perPage = 5;
+        $page = max(1, (int) request()->query('page', 1));
+        $total = count($allUsers = $allRoles);
+        $totalPages = max(1, (int) ceil($total / $perPage));
+        $page = min($page, $totalPages);
+        $roles = array_slice($allUsers, ($page - 1) * $perPage, $perPage);
+
+        return view('admin::roles.index', [
+            'roles' => $roles,
+            'page' => $page,
+            'totalPages' => $totalPages,
+            'from' => $total === 0 ? 0 : ($page - 1) * $perPage + 1,
+            'to' => min($page * $perPage, $total),
+            'total' => $total,
+        ]);
+    }
+
+    /**
+     * Edit Role & Access page — role name + full permission matrix.
+     * Dummy data mirrors the seeded roles/permissions + role_has_permissions.
+     * TODO(backend): replace with Role::findById($id) + sync() on save.
+     */
+    public function roleEdit(string $id): View
+    {
+        $allRoles = [
+            '1' => [
+                'name' => 'investor',
+                'permissions' => [
+                    'dashboard.view', 'market-insights.view', 'telemetry.view-quota',
+                    'agent.chat.view', 'agent.chat.create', 'agent.chat.delete',
+                    'agent.tools.financials', 'agent.tools.screener', 'agent.tools.valuation-matrix',
+                    'agent.report.export-markdown', 'agent.report.export-pdf',
+                    'profile.view', 'profile.update',
+                    'watchlist.view', 'watchlist.create', 'watchlist.update', 'watchlist.delete',
+                ],
+            ],
+            '2' => [
+                'name' => 'analyst',
+                'permissions' => [
+                    'dashboard.view', 'market-insights.view', 'sectors.api.metrics.view',
+                    'sectors.cache.view', 'telemetry.view-quota',
+                    'agent.chat.view', 'agent.chat.create',
+                    'agent.tools.financials', 'agent.tools.screener', 'agent.tools.valuation-matrix',
+                    'agent.report.export-markdown', 'agent.report.export-pdf',
+                    'profile.view', 'profile.update',
+                    'watchlist.view', 'watchlist.create', 'watchlist.update', 'watchlist.delete',
+                ],
+            ],
+            '3' => [
+                'name' => 'admin',
+                'permissions' => [
+                    'admin.dashboard.view', 'admin.users.view', 'admin.users.manage',
+                    'admin.insights.manage', 'admin.prompts.manage', 'admin.system.cache-manage',
+                    'admin.audit-logs.view',
+                    'dashboard.view', 'profile.view', 'profile.update',
+                    'sectors.api.metrics.view', 'sectors.cache.view', 'sectors.cache.flush',
+                ],
+            ],
+            '4' => [
+                'name' => 'super-admin',
+                'permissions' => [], // empty = ALL permissions checked
+            ],
+        ];
+
+        $role = $allRoles[$id] ?? ['name' => 'unknown-role', 'permissions' => []];
+
+        return view('admin::roles.edit', [
+            'roleId' => $id,
+            'roleName' => $role['name'],
+            'rolePermissions' => $role['permissions'],
+            'isSuperAdmin' => $role['name'] === 'super-admin',
+        ]);
+    }
+
+    /**
+     * Create Role page — same form as edit, empty state.
+     */
+    public function roleCreate(): View
+    {
+        return view('admin::roles.edit', [
+            'roleId' => null,
+            'roleName' => '',
+            'rolePermissions' => [],
+            'isSuperAdmin' => false,
+        ]);
+    }
 }

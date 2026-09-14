@@ -8,10 +8,17 @@
         <x-admin::partials.tab-link :href="route('admin.insights.index')" :active="$current === 'insights'">Market Article</x-admin::partials.tab-link>
         <x-admin::partials.tab-link :href="route('admin.prompts.index')" :active="$current === 'prompts'">Prompt starter</x-admin::partials.tab-link>
         <x-admin::partials.tab-link :href="route('admin.caches.index')" :active="$current === 'caches'">Cache</x-admin::partials.tab-link>
+        <x-admin::partials.tab-link :href="route('admin.roles.index')" :active="$current === 'roles'">Roles & Access</x-admin::partials.tab-link>
     </x-slot:navigation>
 
     <!-- Dummy data comes from AdminPageController (TODO: connect to backend) -->
     <div class="space-y-8">
+        <!-- Page heading -->
+        <div>
+            <h1 class="text-2xl font-bold text-foreground tracking-tight">Cache & Usage</h1>
+            <p class="text-sm text-muted-foreground-1 mt-1">Monitor the sectors data cache and the agent's daily LLM token usage.</p>
+        </div>
+
         <!-- Stats row (A2: API credits shown here too, dummy + TODO) — Preline card-stats -->
         <div class="flex flex-wrap gap-4">
             @foreach ($stats as $stat)
