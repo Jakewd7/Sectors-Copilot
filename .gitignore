@@ -29,3 +29,5 @@ Thumbs.db
 # AI assistant local configs & notes (not part of the app)
 IDEA.md
 boost.json
+.agents/
+.codegraph/
