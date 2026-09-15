@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use Modules\Admin\Http\Controllers\AdminPageController;
+use Modules\Admin\Http\Controllers\MarketInsightCmsController;
+use Modules\Admin\Http\Controllers\UserManagementController;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,8 +20,19 @@ use Modules\Admin\Http\Controllers\AdminPageController;
 */
 
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/users', [AdminPageController::class, 'users'])->name('users.index');
-    Route::get('/market-insights', [AdminPageController::class, 'marketInsights'])->name('insights.index');
+    Route::resource('users', UserManagementController::class)->only([
+        'index',
+        'store',
+        'update'
+    ]);
+    Route::patch('users/{id}/suspend', [UserManagementController::class, 'toggleSuspend'])
+        ->name('users.suspend');
+    Route::resource('insights', MarketInsightCmsController::class)->only([
+        'index',
+        'store',
+        'update',
+        'destroy'
+    ]);
     Route::get('/prompt-starters', [AdminPageController::class, 'promptStarters'])->name('prompts.index');
     Route::get('/caches', [AdminPageController::class, 'caches'])->name('caches.index');
     Route::get('/roles', [AdminPageController::class, 'roles'])->name('roles.index');
