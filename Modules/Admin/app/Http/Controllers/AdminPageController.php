@@ -128,9 +128,9 @@ class AdminPageController extends Controller
     {
         $allRoles = [
             ['id' => 1, 'name' => 'investor', 'guard' => 'web', 'permissions' => 17],
-            ['id' => 2, 'name' => 'analyst', 'guard' => 'web', 'permissions' => 16],
-            ['id' => 3, 'name' => 'admin', 'guard' => 'web', 'permissions' => 14],
-            ['id' => 4, 'name' => 'super-admin', 'guard' => 'web', 'permissions' => 28],
+            ['id' => 2, 'name' => 'analyst', 'guard' => 'web', 'permissions' => 18],
+            ['id' => 3, 'name' => 'admin', 'guard' => 'web', 'permissions' => 13],
+            ['id' => 4, 'name' => 'super-admin', 'guard' => 'web', 'permissions' => 30],
         ];
 
         // Simple query-string pagination over the dummy set.
