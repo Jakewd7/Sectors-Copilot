@@ -18,23 +18,23 @@ class AgentWorkspaceController extends Controller
         $context = $request->query('context');
         $tickers = $request->query('tickers');
 
-        if (!$initialPrompt && $ticker) {
+        if (! $initialPrompt && $ticker) {
             $initialPrompt = "Analisis prospek saham {$ticker} terkini secara teknikal dan fundamental.";
-        } elseif (!$initialPrompt && $context === 'watchlist' && $tickers) {
+        } elseif (! $initialPrompt && $context === 'watchlist' && $tickers) {
             $initialPrompt = "Berikan perbandingan dan rekomendasi rotasi portofolio untuk saham berikut: {$tickers}.";
         }
 
         $sessions = ChatSession::where('user_id', $userId)
             ->orderByDesc('is_pinned')
             ->orderByDesc('updated_at')
-            ->get(['id', 'title', 'is_pinned', 'created_at']);
+            ->get(['id', 'title', 'is_pinned', 'updated_at']);
 
         $activeSessionId = $request->query('session_id');
 
-        if ($initialPrompt && !$activeSessionId) {
+        if ($initialPrompt && ! $activeSessionId) {
             $sessionTitle = $ticker
-                ? "Riset {$ticker} - " . now()->format('d M H:i')
-                : "Analisis Pasar - " . now()->format('d M H:i');
+                ? "Riset {$ticker} - ".now()->format('d M H:i')
+                : 'Analisis Pasar - '.now()->format('d M H:i');
 
             $activeSession = ChatSession::create([
                 'user_id' => $userId,
@@ -67,7 +67,7 @@ class AgentWorkspaceController extends Controller
 
         $session = ChatSession::create([
             'user_id' => $request->user()->id,
-            'title' => $request->title ?? 'Riset Baru ' . now()->format('d/m/Y H:i'),
+            'title' => $request->title ?? 'Riset Baru '.now()->format('d/m/Y H:i'),
             'is_pinned' => false,
         ]);
 
@@ -93,8 +93,45 @@ class AgentWorkspaceController extends Controller
             ->where('user_id', $request->user()->id)
             ->firstOrFail();
 
-        $session->update(['is_pinned' => !$session->is_pinned]);
+        $session->update(['is_pinned' => ! $session->is_pinned]);
 
-        return response()->json(['success' => true, 'is_pinned' => $session->is_pinned]);
+        return response()->json([
+            'success' => true,
+            'is_pinned' => $session->is_pinned,
+            'updated_at' => optional($session->updated_at)->toISOString(),
+        ]);
+    }
+
+    public function renameSession(Request $request, string $sessionId): JsonResponse
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:100',
+        ]);
+
+        $session = ChatSession::where('id', $sessionId)
+            ->where('user_id', $request->user()->id)
+            ->firstOrFail();
+
+        $session->update(['title' => $validated['title']]);
+
+        return response()->json([
+            'success' => true,
+            'title' => $session->title,
+            'updated_at' => optional($session->updated_at)->toISOString(),
+        ]);
+    }
+
+    public function destroySession(Request $request, string $sessionId): JsonResponse
+    {
+        $session = ChatSession::where('id', $sessionId)
+            ->where('user_id', $request->user()->id)
+            ->firstOrFail();
+
+        // Messages and their step logs cascade via the schema's foreign keys;
+        // delete explicitly so the behaviour is identical if that ever changes.
+        $session->messages()->delete();
+        $session->delete();
+
+        return response()->json(['success' => true]);
     }
 }
