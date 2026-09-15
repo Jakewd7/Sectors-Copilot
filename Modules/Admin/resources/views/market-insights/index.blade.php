@@ -84,7 +84,7 @@
                 </div>
 
                 <!-- TODO: wire submit to backend (store/update MarketInsight) -->
-                <form class="space-y-4" @submit.prevent="open = false">
+                <form class="space-y-4" @submit.prevent="syncContent(); open = false">
                     <div>
                         <label class="block text-sm mb-2 text-foreground">Title</label>
                         <input type="text" x-model="form.title"
@@ -102,18 +102,22 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm mb-2 text-foreground">Content (Markdown)</label>
-                        <textarea x-model="form.content" rows="8"
-                                  class="py-2.5 px-4 block w-full bg-form-field form-field-border rounded-lg text-sm text-foreground font-mono placeholder:text-muted-foreground-1 focus:border-primary-focus focus:ring-primary-focus transition"
-                                  placeholder="Write the article body in Markdown..."></textarea>
+                        <label class="block text-sm mb-2 text-foreground">Content</label>
+                        {{-- WYSIWYG editor (Quill) mounts here; the hidden input carries the
+                             HTML into `form.content` so Alpine state stays the source of truth
+                             on submit. Quill JS/CSS load from the page-specific Vite entry
+                             (resources/js/admin-editor.js) — see the @vite push below. --}}
+                        <div x-ref="editorHost"
+                             class="bg-form-field form-field-border rounded-lg overflow-hidden"></div>
+                        <input type="hidden" x-model="form.content">
+
+                        <p class="mt-2 text-xs text-muted-foreground-1">
+                            Rich text is saved as HTML.
+                            {{-- TODO(backend): sanitize before storing and before public render --}}
+                        </p>
                     </div>
 
-                    <!-- Live markdown preview (Marked.js, already loaded in master layout) -->
-                    <div x-show="form.content.trim()">
-                        <label class="block text-sm mb-2 text-muted-foreground-1">Preview</label>
-                        <div class="bg-background border border-layer-line rounded-lg px-4 py-3 text-sm text-foreground prose prose-invert max-w-none break-words"
-                             x-html="renderMarkdown(form.content)"></div>
-                    </div>
+                    <!-- Live preview is no longer needed: the editor IS the preview. -->
 
                     <div class="flex justify-end gap-2 pt-2">
                         <button type="button" @click="open = false"
@@ -121,7 +125,7 @@
                             Cancel
                         </button>
                         <!-- Save draft: published_at stays null (C8) -->
-                        <button type="button" @click="open = false"
+                        <button type="button" @click="syncContent(); open = false"
                                 class="py-2.5 px-5 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-layer-line bg-layer text-foreground hover:bg-layer-hover focus:outline-hidden transition">
                             Save draft
                         </button>
@@ -137,17 +141,51 @@
     </div>
 
     @push('scripts')
+        {{-- Page-specific editor bundle (Quill). Own Vite entry so the ~200KB library
+             is loaded only on this page, never in the shared app.js bundle. --}}
+        @vite('resources/js/admin-editor.js')
+
         <script>
             document.addEventListener('alpine:init', () => {
                 Alpine.data('insightEditor', () => ({
                     open: false,
                     editingId: null,
                     form: { title: '', category: 'Weekly review', content: '' },
+                    editor: null,
+
+                    /**
+                     * Mount Quill once. The modal is in the DOM from the start
+                     * (x-show, not x-if), so the host element already exists — the
+                     * editor can be created synchronously during openCreate/openEdit.
+                     *
+                     * NOTE: deliberately NOT using $nextTick here. Alpine's nextTick
+                     * only drains its callback queue when its internal "flushing" flag
+                     * is false; if it is stuck (it can be, when a component method is
+                     * invoked outside the reactive cycle) the callback never runs and
+                     * the editor silently never mounts. Creating the editor
+                     * synchronously avoids that dependency entirely — the host is
+                     * inside an x-show (display:none), and Quill initialises fine in a
+                     * hidden container.
+                     */
+                    mountEditor() {
+                        if (this.editor || !window.createArticleEditor) return;
+
+                        this.editor = window.createArticleEditor(this.$refs.editorHost, '');
+
+                        // Mirror editor HTML into Alpine state on every keystroke, so
+                        // `form.content` is current whenever the form is submitted.
+                        this.editor.instance.on('text-change', () => {
+                            this.form.content = this.editor.getHtml();
+                        });
+                    },
 
                     openCreate() {
                         this.editingId = null;
                         this.form = { title: '', category: 'Weekly review', content: '' };
                         this.open = true;
+
+                        this.mountEditor();
+                        this.editor?.setHtml('');
                     },
 
                     openEdit(insight) {
@@ -158,10 +196,14 @@
                             content: '', // TODO: load article content from backend
                         };
                         this.open = true;
+
+                        this.mountEditor();
+                        this.editor?.setHtml(this.form.content);
                     },
 
-                    renderMarkdown(text) {
-                        return window.marked ? window.marked.parse(text || '') : text;
+                    /** Read the editor into form.content just before submitting. */
+                    syncContent() {
+                        if (this.editor) this.form.content = this.editor.getHtml();
                     },
                 }));
             });
