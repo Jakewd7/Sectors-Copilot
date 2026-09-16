@@ -31,3 +31,7 @@ IDEA.md
 boost.json
 .agents/
 .codegraph/
+CLAUDE.md
+skills-lock.json
+/.agents/
+/.codegraph/

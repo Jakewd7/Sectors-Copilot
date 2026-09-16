@@ -54,6 +54,9 @@ class RolePermissionSeeder extends Seeder
                 'admin.users.manage',
                 'admin.system.cache-manage',
                 'admin.audit-logs.view',
+                // Roles & Access control (super-admin only — see $superAdminRole below)
+                'admin.roles.view',
+                'admin.roles.manage',
             ],
         ];
 

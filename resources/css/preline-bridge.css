@@ -150,3 +150,49 @@ html:not(.dark) {
 .dark .form-select {
     background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a9ddbe' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
 }
+
+/* --- Sidebar nav scrollbar: thin, appears only on hover --- */
+.sidebar-scroll { scrollbar-width: thin; scrollbar-color: transparent transparent; }
+.sidebar-scroll:hover { scrollbar-color: var(--theme-border) transparent; }
+.sidebar-scroll::-webkit-scrollbar { width: 6px; }
+.sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
+.sidebar-scroll::-webkit-scrollbar-thumb { background-color: transparent; border-radius: 9999px; }
+.sidebar-scroll:hover::-webkit-scrollbar-thumb { background-color: var(--theme-border); }
+.sidebar-scroll::-webkit-scrollbar-thumb:hover { background-color: var(--theme-accent-dim); }
+
+/* --- Sidebar chrome: pre-paint collapsed state ----------------------------
+   The `sidebar-collapsed` class and `--sidebar-w` are written on <html> by the
+   inline pre-paint script (partials/prepaint-script) and kept in sync by
+   appChrome().applySidebarVars().
+
+   Why this exists: the collapsed flag lives in localStorage, which only JS can
+   read — and the Vite bundle is an ES module, so it boots AFTER the first paint.
+   While label visibility was driven by Alpine `:class` bindings, every reload
+   painted the expanded rail first and then snapped to the collapsed one (the
+   same class of bug as the dark→light theme flash). Driving it from a
+   server-paintable class removes the frame entirely.
+
+   Everything is scoped to lg (>=64rem): on mobile the sidebar is a fixed 256px
+   drawer where labels must always show. These rules are intentionally UNLAYERED
+   so they beat Tailwind's layered utilities (e.g. `lg:hidden`) in the cascade. */
+:root {
+    /* SSR default until the inline script sets an exact px value. */
+    --sidebar-w: 16rem;
+}
+
+/* Collapsed-rail divider: hidden everywhere by default (mobile shows no divider).
+   Must be declared OUTSIDE the media query so mobile is covered too. */
+.sidebar-hide-expanded { display: none; }
+
+@media (min-width: 64rem) {
+    /* Labels / text: hidden only in the collapsed desktop rail. */
+    .sidebar-collapsed .sidebar-hide-collapsed { display: none; }
+
+    /* Collapsed-rail divider: the inverse — appears only when collapsed. */
+    .sidebar-collapsed .sidebar-hide-expanded { display: block; }
+
+    .sidebar-collapsed .sidebar-center-collapsed { justify-content: center; }
+    .sidebar-collapsed .sidebar-flush-collapsed { padding-inline: 0; }
+}
+
+

@@ -10,6 +10,10 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Sign In - {{ config('app.name', 'Sectors Copilot') }}</title>
 
+    {{-- Theme before first paint (inline, NOT deferred).
+         No sidebar on this page, so the sidebar half is omitted. --}}
+    @include('partials.prepaint-script')
+
     @fonts
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
