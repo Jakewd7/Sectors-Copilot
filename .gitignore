@@ -33,5 +33,3 @@ boost.json
 .codegraph/
 CLAUDE.md
 skills-lock.json
-/.agents/
-/.codegraph/
