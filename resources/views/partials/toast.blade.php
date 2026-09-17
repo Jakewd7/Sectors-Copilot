@@ -1,12 +1,4 @@
-{{--
-    Global toast stack (Preline alert styling, theme tokens only).
-    Floating top-right, stacked newest-first, auto-dismiss with manual close.
-    Driven by the `toastStack` Alpine store so any page can call:
 
-        $store.toast.push({ variant: 'error', title: '...', message: '...' })
-
-    Variants: 'error' (rose) | 'success' (accent) | 'info' (neutral).
---}}
 <div x-data x-cloak
      class="pointer-events-none fixed top-4 right-4 z-[100] flex flex-col gap-2.5 w-[min(24rem,calc(100vw-2rem))]"
      aria-live="polite" aria-atomic="false">
@@ -24,7 +16,6 @@
              }"
              role="alert">
 
-            <!-- Variant icon -->
             <svg x-show="toast.variant === 'error'" class="size-5 shrink-0 text-rose-500 mt-0.5" fill="none"
                  stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round"
@@ -46,7 +37,6 @@
                 <p class="text-sm font-semibold text-foreground" x-text="toast.title"></p>
                 <p class="mt-0.5 text-sm leading-relaxed text-muted-foreground-1" x-text="toast.message"></p>
 
-                {{-- Inline action, e.g. "Resend prompt" --}}
                 <button x-show="toast.action" type="button"
                         @click="toast.action.handler(); $store.toast.dismiss(toast.id)"
                         class="mt-2.5 inline-flex items-center gap-x-1.5 text-xs font-medium text-primary-active hover:text-primary-hover transition">
@@ -58,7 +48,6 @@
                 </button>
             </div>
 
-            <!-- Dismiss -->
             <button type="button" @click="$store.toast.dismiss(toast.id)"
                     class="shrink-0 -m-1 p-1 rounded-lg text-muted-foreground-1 hover:text-foreground hover:bg-layer-hover transition"
                     aria-label="Dismiss notification">

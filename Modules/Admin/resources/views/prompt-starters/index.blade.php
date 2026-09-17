@@ -1,26 +1,14 @@
 <x-admin::layouts.master>
-    @php
-        $current = 'prompts';
-    @endphp
-
-    <x-slot:navigation>
-        <x-admin::partials.tab-link :href="route('admin.users.index')" :active="$current === 'users'">Users</x-admin::partials.tab-link>
-        <x-admin::partials.tab-link :href="route('admin.insights.index')" :active="$current === 'insights'">Market Article</x-admin::partials.tab-link>
-        <x-admin::partials.tab-link :href="route('admin.prompts.index')" :active="$current === 'prompts'">Prompt starter</x-admin::partials.tab-link>
-        <x-admin::partials.tab-link :href="route('admin.caches.index')" :active="$current === 'caches'">Cache</x-admin::partials.tab-link>
-        <x-admin::partials.tab-link :href="route('admin.roles.index')" :active="$current === 'roles'">Roles & Access</x-admin::partials.tab-link>
-    </x-slot:navigation>
-
     <!-- Dummy data comes from AdminPageController (TODO: connect to backend) -->
     <div class="space-y-6" x-data="{ open: false, editingId: null, form: { text: '' } }">
-        <!-- Page heading -->
+
         <div>
             <h1 class="text-2xl font-bold text-foreground tracking-tight">Prompt Starters</h1>
             <p class="text-sm text-muted-foreground-1 mt-1">Curate the suggested research prompts users see in the agent workspace.</p>
         </div>
 
         <div class="flex justify-end">
-            <!-- Preline solid button -->
+
             <button type="button" @click="editingId = null; form.text = ''; open = true"
                     class="py-2.5 px-4 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg bg-primary border border-primary-line text-primary-foreground hover:bg-primary-hover focus:outline-hidden focus:bg-primary-focus transition">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -30,7 +18,6 @@
             </button>
         </div>
 
-        <!-- Prompt list (Preline card rows) -->
         <div class="space-y-3">
             @foreach ($prompts as $prompt)
                 <div class="bg-layer border border-layer-line rounded-xl px-5 py-4 flex items-center justify-between gap-4 hover:bg-layer-hover/60 transition">
@@ -55,7 +42,6 @@
             @endforeach
         </div>
 
-        <!-- CREATE / EDIT MODAL (Alpine, per D10; text-only per C9) — Preline modal card -->
         <div x-show="open" x-cloak
              class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm"
              @keydown.escape.window="open = false">

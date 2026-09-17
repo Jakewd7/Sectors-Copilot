@@ -1,19 +1,7 @@
 <x-admin::layouts.master>
-    @php
-        $current = 'caches';
-    @endphp
-
-    <x-slot:navigation>
-        <x-admin::partials.tab-link :href="route('admin.users.index')" :active="$current === 'users'">Users</x-admin::partials.tab-link>
-        <x-admin::partials.tab-link :href="route('admin.insights.index')" :active="$current === 'insights'">Market Article</x-admin::partials.tab-link>
-        <x-admin::partials.tab-link :href="route('admin.prompts.index')" :active="$current === 'prompts'">Prompt starter</x-admin::partials.tab-link>
-        <x-admin::partials.tab-link :href="route('admin.caches.index')" :active="$current === 'caches'">Cache</x-admin::partials.tab-link>
-        <x-admin::partials.tab-link :href="route('admin.roles.index')" :active="$current === 'roles'">Roles & Access</x-admin::partials.tab-link>
-    </x-slot:navigation>
-
     <!-- Dummy data comes from AdminPageController (TODO: connect to backend) -->
     <div class="space-y-8">
-        <!-- Page heading -->
+
         <div>
             <h1 class="text-2xl font-bold text-foreground tracking-tight">Cache & Usage</h1>
             <p class="text-sm text-muted-foreground-1 mt-1">Monitor the sectors data cache and the agent's daily LLM token usage.</p>
@@ -36,7 +24,6 @@
             :meta="$llmUsage['daily']['meta']"
             :models="$llmUsage['daily']['models']" />
 
-        <!-- Cache table (Preline tables pattern) -->
         <div>
             <h2 class="text-sm font-semibold text-foreground mb-4">Cache per company / sector</h2>
 
@@ -56,7 +43,7 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground font-mono">{{ $entry['key'] }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground-1">{{ $entry['expires_at'] }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-end">
-                                        <!-- Flush per-key only (A3); action is a dummy for now -->
+
                                         <x-admin::partials.action-button action="flush"
                                             @click="alert('TODO: connect per-key flush to backend')" />
                                     </td>

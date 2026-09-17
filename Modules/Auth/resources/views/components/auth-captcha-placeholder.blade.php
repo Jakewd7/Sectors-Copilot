@@ -1,18 +1,10 @@
 @php
-    /** @var string $provider */
-    $provider = $provider ?? 'turnstile'; // turnstile | recaptcha
+    $provider = $provider ?? 'turnstile';
 @endphp
-
-{{--
-    CAPTCHA PLACEHOLDER — DISPLAY ONLY (no backend verification).
-    Renders a static widget mock matching Cloudflare Turnstile's visual
-    footprint so the layout is final; wiring the real challenge is a
-    backend task (inject sitekey + verify token server-side).
---}}
 
 <div class="select-none" aria-hidden="true">
     <div class="w-[300px] max-w-full h-[65px] bg-surface border border-border rounded-md flex items-center px-4 gap-3">
-        <!-- spinner in loading state -->
+
         <svg class="w-6 h-6 text-text-muted shrink-0" viewBox="0 0 24 24" fill="none">
             <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" class="opacity-20"></circle>
             <path d="M12 2a10 10 0 019.54 7" stroke="currentColor" stroke-width="3" stroke-linecap="round"></path>

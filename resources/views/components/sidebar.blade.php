@@ -1,17 +1,4 @@
 @php
-    /**
-     * Global sidebar — SINGLE sidebar for every role, filtered by the Spatie
-     * permissions seeded in RolePermissionSeeder. Permission checks return
-     * false (never throw) for permissions that don't exist yet, so items can
-     * reference future permissions safely.
-     *
-     * To add an item: append one entry below with the route name + permission.
-     * 'route' => route name (item hides itself if the route doesn't exist)
-     * 'can'   => Spatie permission name, or null for always-visible
-     *
-     * Collapse/expand is driven by the `appChrome()` Alpine scope of
-     * app-shell (sidebarCollapsed), which this markup inherits.
-     */
     $user = auth()->user();
 
     $sections = [
@@ -25,10 +12,6 @@
             'label' => 'Research',
             'items' => [
                 ['route' => 'agent.workspace', 'label' => 'Agent Workspace', 'icon' => 'sparkles', 'can' => 'agent.chat.view'],
-                // HIDDEN for now (user decision): the routes below don't exist yet.
-                // Re-enable once the backend adds them — the item shows up automatically.
-                // ['route' => 'market-insights.index', 'label' => 'Market Insights', 'icon' => 'news', 'can' => 'market-insights.view'],
-                // ['route' => 'watchlist.index', 'label' => 'Watchlist', 'icon' => 'bookmark', 'can' => 'watchlist.view'],
             ],
         ],
         [
@@ -39,7 +22,6 @@
                 ['route' => 'admin.prompts.index', 'label' => 'Prompt Starters', 'icon' => 'chat', 'can' => 'admin.prompts.manage'],
                 ['route' => 'admin.caches.index', 'label' => 'Cache & Usage', 'icon' => 'database', 'can' => 'admin.system.cache-manage'],
                 // TODO(backend): permission does not exist yet in RolePermissionSeeder
-                // (super-admin only) — see the "Roles & Access" gap report.
                 ['route' => 'admin.roles.index', 'label' => 'Roles & Access', 'icon' => 'shield', 'can' => 'admin.roles.view'],
             ],
         ],
@@ -51,8 +33,6 @@
         ],
     ];
 
-    // Which item should be highlighted? Longest matching route prefix wins,
-    // so admin.users.* lights "Users" (not something broader).
     $currentRoute = request()->route()?->getName() ?? '';
     $activeRoute = null;
     foreach ($sections as $section) {
@@ -80,15 +60,14 @@
 
 <div class="h-full w-full flex flex-col">
 
-    <!-- BRAND (placeholder identity from config/brand.php — swap there, not here) -->
-    <div class="h-16 shrink-0 px-3 flex items-center border-b border-layer-line">
+    <div class="h-16 shrink-0 px-3 flex items-center gap-2 border-b border-layer-line">
         <a href="{{ \Illuminate\Support\Facades\Route::has('dashboard.index') ? route('dashboard.index') : url('/') }}"
-           class="flex items-center gap-x-2.5 min-w-0 w-full sidebar-center-collapsed">
+           class="flex items-center gap-x-2.5 min-w-0 flex-1 sidebar-center-collapsed">
             @if (config('brand.logo'))
                 <img src="{{ asset(config('brand.logo')) }}" alt="{{ config('brand.name') }}"
                      class="size-8 shrink-0 rounded-lg object-contain">
             @else
-                {{-- Monogram fallback until the real logo is available --}}
+
                 <span class="size-8 shrink-0 rounded-lg bg-primary text-primary-foreground
                              inline-flex items-center justify-center text-sm font-bold tracking-tight">
                     {{ config('brand.mark') }}
@@ -96,15 +75,32 @@
             @endif
             <span class="truncate text-sm font-semibold text-foreground sidebar-hide-collapsed">{{ config('brand.name') }}</span>
         </a>
+
+        <button type="button" @click="sidebarOpen = false"
+                class="lg:hidden shrink-0 size-8 rounded-lg text-muted-foreground-1 hover:bg-layer-hover hover:text-foreground transition inline-flex items-center justify-center"
+                aria-label="Close navigation">
+            <svg class="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M6 18 18 6M6 6l12 12"/>
+            </svg>
+        </button>
     </div>
 
-    <!-- NAVIGATION -->
+    <div class="hidden lg:block shrink-0 px-3 pt-3">
+        <button type="button" @click="toggleCollapsed()"
+                class="w-full flex items-center gap-x-3 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground-1 hover:bg-layer-hover hover:text-foreground transition sidebar-center-collapsed"
+                :title="sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'"
+                aria-label="Toggle sidebar width">
+            <svg class="size-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 4v16M4 4h16v16H4z"/>
+            </svg>
+            <span class="truncate sidebar-hide-collapsed">Collapse sidebar</span>
+        </button>
+    </div>
+
     <nav class="flex-1 overflow-y-auto overflow-x-hidden px-3 py-3 space-y-0.5 sidebar-scroll"
          aria-label="Main navigation">
         @foreach ($sections as $section)
             @php
-                // Resolve visible items first so an empty section (e.g. no admin
-                // access) renders no heading at all.
                 $visible = collect($section['items'])
                     ->filter(fn ($item) =>
                         \Illuminate\Support\Facades\Route::has($item['route'])
@@ -118,9 +114,7 @@
                     <p class="px-3 pt-6 pb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground-1/70 sidebar-hide-collapsed">
                         {{ $section['label'] }}
                     </p>
-                    {{-- Collapsed rail: a thin divider instead of the text label.
-                         Visibility is CSS-driven (see preline-bridge.css) so it is
-                         correct on the very first paint, not only after Alpine boots. --}}
+
                     <div class="sidebar-hide-expanded pt-4 pb-2">
                         <div class="mx-3 border-t border-layer-line"></div>
                     </div>
@@ -144,16 +138,15 @@
         @endforeach
     </nav>
 
-    <!-- FOOTER: theme toggle + user + logout -->
     <div class="shrink-0 border-t border-layer-line p-3 space-y-1">
         <button type="button" onclick="toggleTheme()" aria-label="Toggle theme" title="Toggle light/dark theme"
                 class="w-full flex items-center gap-x-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground-1 hover:bg-layer-hover hover:text-foreground transition sidebar-center-collapsed">
-            <!-- moon (visible in light mode) -->
+
             <svg class="size-5 shrink-0 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
                       d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
             </svg>
-            <!-- sun (visible in dark mode) -->
+
             <svg class="size-5 shrink-0 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
                       d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>

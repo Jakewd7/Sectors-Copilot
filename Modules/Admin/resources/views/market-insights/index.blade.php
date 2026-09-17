@@ -1,24 +1,11 @@
 <x-admin::layouts.master>
-    @php
-        $current = 'insights';
-    @endphp
-
-    <x-slot:navigation>
-        <x-admin::partials.tab-link :href="route('admin.users.index')" :active="$current === 'users'">Users</x-admin::partials.tab-link>
-        <x-admin::partials.tab-link :href="route('admin.insights.index')" :active="$current === 'insights'">Market Article</x-admin::partials.tab-link>
-        <x-admin::partials.tab-link :href="route('admin.prompts.index')" :active="$current === 'prompts'">Prompt starter</x-admin::partials.tab-link>
-        <x-admin::partials.tab-link :href="route('admin.caches.index')" :active="$current === 'caches'">Cache</x-admin::partials.tab-link>
-        <x-admin::partials.tab-link :href="route('admin.roles.index')" :active="$current === 'roles'">Roles & Access</x-admin::partials.tab-link>
-    </x-slot:navigation>
-
     <div class="space-y-6" x-data="insightEditor()">
-        <!-- Page heading -->
+
         <div>
             <h1 class="text-2xl font-bold text-foreground tracking-tight">Market Articles</h1>
             <p class="text-sm text-muted-foreground-1 mt-1">Publish market insight articles shown to users across the app.</p>
         </div>
 
-        <!-- Stats + Add article button on one line (same pattern as Users page) -->
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div class="flex flex-wrap gap-4">
                 @foreach ($stats as $stat)
@@ -26,7 +13,6 @@
                 @endforeach
             </div>
 
-            <!-- Preline solid button -->
             <button type="button" @click="openCreate()"
                     class="py-2.5 px-4 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg bg-primary border border-primary-line text-primary-foreground hover:bg-primary-hover focus:outline-hidden focus:bg-primary-focus transition">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -36,7 +22,6 @@
             </button>
         </div>
 
-        <!-- Article list (Preline card rows) -->
         <div class="space-y-3">
             @foreach ($insights as $insight)
                 <div class="bg-layer border border-layer-line rounded-xl px-5 py-4 flex items-center justify-between gap-4 hover:bg-layer-hover/60 transition">
@@ -65,7 +50,6 @@
             @endforeach
         </div>
 
-        <!-- CREATE / EDIT MODAL (Alpine, per D10) — Preline modal card -->
         <div x-show="open" x-cloak
              class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm overflow-y-auto"
              @keydown.escape.window="open = false">
@@ -103,10 +87,7 @@
 
                     <div>
                         <label class="block text-sm mb-2 text-foreground">Content</label>
-                        {{-- WYSIWYG editor (Quill) mounts here; the hidden input carries the
-                             HTML into `form.content` so Alpine state stays the source of truth
-                             on submit. Quill JS/CSS load from the page-specific Vite entry
-                             (resources/js/admin-editor.js) — see the @vite push below. --}}
+
                         <div x-ref="editorHost"
                              class="bg-form-field form-field-border rounded-lg overflow-hidden"></div>
                         <input type="hidden" x-model="form.content">
@@ -117,19 +98,17 @@
                         </p>
                     </div>
 
-                    <!-- Live preview is no longer needed: the editor IS the preview. -->
-
                     <div class="flex justify-end gap-2 pt-2">
                         <button type="button" @click="open = false"
                                 class="py-2.5 px-4 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-layer-line bg-layer text-muted-foreground-1 hover:bg-layer-hover hover:text-foreground focus:outline-hidden transition">
                             Cancel
                         </button>
-                        <!-- Save draft: published_at stays null (C8) -->
+
                         <button type="button" @click="syncContent(); open = false"
                                 class="py-2.5 px-5 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-layer-line bg-layer text-foreground hover:bg-layer-hover focus:outline-hidden transition">
                             Save draft
                         </button>
-                        <!-- Publish now: sets published_at to now (C8) -->
+
                         <button type="submit"
                                 class="py-2.5 px-5 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg bg-primary border border-primary-line text-primary-foreground hover:bg-primary-hover focus:outline-hidden focus:bg-primary-focus transition">
                             Publish now
@@ -141,8 +120,7 @@
     </div>
 
     @push('scripts')
-        {{-- Page-specific editor bundle (Quill). Own Vite entry so the ~200KB library
-             is loaded only on this page, never in the shared app.js bundle. --}}
+
         @vite('resources/js/admin-editor.js')
 
         <script>
@@ -153,27 +131,11 @@
                     form: { title: '', category: 'Weekly review', content: '' },
                     editor: null,
 
-                    /**
-                     * Mount Quill once. The modal is in the DOM from the start
-                     * (x-show, not x-if), so the host element already exists — the
-                     * editor can be created synchronously during openCreate/openEdit.
-                     *
-                     * NOTE: deliberately NOT using $nextTick here. Alpine's nextTick
-                     * only drains its callback queue when its internal "flushing" flag
-                     * is false; if it is stuck (it can be, when a component method is
-                     * invoked outside the reactive cycle) the callback never runs and
-                     * the editor silently never mounts. Creating the editor
-                     * synchronously avoids that dependency entirely — the host is
-                     * inside an x-show (display:none), and Quill initialises fine in a
-                     * hidden container.
-                     */
                     mountEditor() {
                         if (this.editor || !window.createArticleEditor) return;
 
                         this.editor = window.createArticleEditor(this.$refs.editorHost, '');
 
-                        // Mirror editor HTML into Alpine state on every keystroke, so
-                        // `form.content` is current whenever the form is submitted.
                         this.editor.instance.on('text-change', () => {
                             this.form.content = this.editor.getHtml();
                         });
@@ -201,7 +163,6 @@
                         this.editor?.setHtml(this.form.content);
                     },
 
-                    /** Read the editor into form.content just before submitting. */
                     syncContent() {
                         if (this.editor) this.form.content = this.editor.getHtml();
                     },

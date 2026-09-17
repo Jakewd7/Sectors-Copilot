@@ -141,4 +141,83 @@ class AdminPanelPageTest extends TestCase
             'Publish and Save draft must both call syncContent().',
         );
     }
+
+    /**
+     * Admin navigation lives ONLY in the sidebar. The panel has no top bar, so the
+     * shell must not render a section-navigation region, and every admin page must
+     * be reachable from the sidebar that is filtered by the same permissions as the
+     * routes — a user must never see a link that answers 403.
+     */
+    public function test_admin_navigation_is_sidebar_only_and_permission_filtered(): void
+    {
+        $this->seed(RolePermissionSeeder::class);
+
+        $cases = [
+            'admin' => [
+                'visible' => ['Users', 'Market Articles', 'Prompt Starters', 'Cache & Usage'],
+                'hidden' => ['Roles & Access'],
+            ],
+            'super-admin' => [
+                'visible' => ['Users', 'Market Articles', 'Prompt Starters', 'Cache & Usage', 'Roles & Access'],
+                'hidden' => [],
+            ],
+        ];
+
+        foreach ($cases as $role => $expectation) {
+            $user = User::factory()->create();
+            $user->assignRole($role);
+
+            $html = $this->actingAs($user)->get('/admin/users')->getContent();
+
+            // No top bar anywhere: the shell's section-navigation region is gone.
+            $this->assertStringNotContainsString(
+                'aria-label="Section navigation"',
+                $html,
+                "[{$role}] admin pages must not render a top-bar navigation region.",
+            );
+            $this->assertStringNotContainsString('<header', $html, "[{$role}] the shell must have no header bar.");
+
+            $links = $this->sidebarAdminLinks($html);
+
+            foreach ($expectation['visible'] as $label) {
+                $this->assertArrayHasKey($label, $links, "[{$role}] '{$label}' is missing from the sidebar.");
+            }
+
+            foreach ($expectation['hidden'] as $label) {
+                $this->assertArrayNotHasKey($label, $links, "[{$role}] must not see '{$label}' in the sidebar.");
+            }
+
+            // Anything the sidebar links to must actually open for that role.
+            foreach ($links as $label => $href) {
+                $this->assertSame(
+                    200,
+                    $this->actingAs($user)->get($href)->getStatusCode(),
+                    "[{$role}] sidebar links '{$label}' to {$href}, which does not answer 200.",
+                );
+            }
+        }
+    }
+
+    /**
+     * Admin sidebar links, keyed by label -> href.
+     *
+     * @return array<string, string>
+     */
+    protected function sidebarAdminLinks(string $html): array
+    {
+        $dom = new \DOMDocument;
+        libxml_use_internal_errors(true);
+        $dom->loadHTML($html);
+        libxml_clear_errors();
+
+        $links = [];
+        foreach ((new \DOMXPath($dom))->query('//nav[@aria-label="Main navigation"]//a') ?: [] as $a) {
+            $label = trim($a->textContent);
+            if (str_starts_with($a->getAttribute('href'), url('/admin'))) {
+                $links[$label] = $a->getAttribute('href');
+            }
+        }
+
+        return $links;
+    }
 }

@@ -10,8 +10,6 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Sign In - {{ config('app.name', 'Sectors Copilot') }}</title>
 
-    {{-- Theme before first paint (inline, NOT deferred).
-         No sidebar on this page, so the sidebar half is omitted. --}}
     @include('partials.prepaint-script')
 
     @fonts
@@ -19,15 +17,15 @@
 </head>
 
 <body class="bg-base text-text-primary font-sans antialiased flex items-center justify-center min-h-screen p-6">
-    <!-- Theme toggle (top-right corner) -->
+
     <button type="button" onclick="toggleTheme()" aria-label="Toggle theme" title="Toggle light/dark theme"
             class="fixed top-5 right-5 w-10 h-10 rounded-xl bg-surface border border-border text-text-muted hover:text-text-primary transition inline-flex items-center justify-center">
-        <!-- moon (visible in light mode) -->
+
         <svg class="w-5 h-5 hidden dark:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
         </svg>
-        <!-- sun (visible in dark mode) -->
+
         <svg class="w-5 h-5 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
@@ -35,10 +33,9 @@
     </button>
 
     <div class="w-full max-w-sm">
-        <!-- Brand header (kept from the app design system) -->
+
         @include('auth::components.auth-logo', ['class' => 'mx-auto mb-8'])
 
-        <!-- Preline: Embedded Sign-In Form block -->
         <div class="bg-card border border-card-line rounded-xl shadow-xl shadow-black/10 dark:shadow-black/40">
             <div class="p-4 sm:p-7">
                 <div class="text-center">
@@ -72,11 +69,10 @@
 
                     <div class="py-3 flex items-center text-xs text-muted-foreground uppercase before:flex-1 before:border-t before:border-line-2 before:me-6 after:flex-1 after:border-t after:border-line-2 after:ms-6">Or</div>
 
-                    <!-- Form -->
                     <form method="POST" action="{{ route('login') }}">
                         @csrf
                         <div class="grid gap-y-4">
-                            <!-- Form Group -->
+
                             <div>
                                 <label for="email" class="block text-sm mb-2 text-foreground">Email address</label>
                                 <div class="relative">
@@ -85,9 +81,7 @@
                                            required autofocus placeholder="Enter your email address">
                                 </div>
                             </div>
-                            <!-- End Form Group -->
 
-                            <!-- Form Group -->
                             <div>
                                 <div class="flex flex-wrap items-center gap-2">
                                     <label for="password" class="block text-sm mb-2 text-foreground">Password</label>
@@ -98,9 +92,7 @@
                                            required autocomplete="current-password" placeholder="Enter your password">
                                 </div>
                             </div>
-                            <!-- End Form Group -->
 
-                            <!-- Checkbox -->
                             <div class="flex items-center">
                                 <div class="flex">
                                     <input id="remember" name="remember" type="checkbox"
@@ -110,19 +102,17 @@
                                     <label for="remember" class="text-sm text-foreground">Remember me</label>
                                 </div>
                             </div>
-                            <!-- End Checkbox -->
 
-                            <!-- Captcha placeholder (display only, no backend verification yet) -->
                             @include('auth::components.auth-captcha-placeholder')
 
                             <button type="submit"
                                     class="w-full py-3 px-4 inline-flex justify-center items-center gap-x-2 text-sm font-medium rounded-lg bg-primary border border-primary-line text-primary-foreground hover:bg-primary-hover focus:outline-hidden focus:bg-primary-focus disabled:opacity-50 disabled:pointer-events-none">Sign in</button>
                         </div>
                     </form>
-                    <!-- End Form -->
+
                 </div>
             </div>
-            <!-- End Sign In -->
+
         </div>
     </div>
 </body>

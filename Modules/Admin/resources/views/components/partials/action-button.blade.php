@@ -1,14 +1,6 @@
 @php
-    /** @var string $action */
-    $action = $action ?? 'edit'; // edit | delete | flush
+    $action = $action ?? 'edit';
 @endphp
-
-{{-- Icon action button (Preline ghost/outline patterns).
-    NOTE: put Alpine handlers (@click etc.) on a wrapper element, NOT on this
-    component tag — attributes passed to a Blade component are forwarded as
-    literal strings, so @click/@js() would never be compiled by Blade or
-    evaluated by Alpine.
---}}
 
 @if ($action === 'edit')
     <button type="button"

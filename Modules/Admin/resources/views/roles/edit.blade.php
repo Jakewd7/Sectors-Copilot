@@ -1,8 +1,5 @@
 <x-admin::layouts.master>
     @php
-        $current = 'roles';
-
-        // Permission matrix mirrors the SEEDED Spatie permissions table (28 perms).
         // TODO(backend): build this list from Permission::all() grouped by prefix.
         $permissionGroups = [
             'Admin panel' => [
@@ -43,7 +40,6 @@
             ],
         ];
 
-        // Flatten all permission names for the "select all" logic.
         $allPermissionNames = collect($permissionGroups)
             ->flatMap(fn ($items) => collect($items)->pluck('name'))
             ->all();
@@ -51,18 +47,9 @@
         $checked = $isSuperAdmin ? $allPermissionNames : $rolePermissions;
     @endphp
 
-    <x-slot:navigation>
-        <x-admin::partials.tab-link :href="route('admin.users.index')" :active="$current === 'users'">Users</x-admin::partials.tab-link>
-        <x-admin::partials.tab-link :href="route('admin.insights.index')" :active="$current === 'insights'">Market Article</x-admin::partials.tab-link>
-        <x-admin::partials.tab-link :href="route('admin.prompts.index')" :active="$current === 'prompts'">Prompt starter</x-admin::partials.tab-link>
-        <x-admin::partials.tab-link :href="route('admin.caches.index')" :active="$current === 'caches'">Cache</x-admin::partials.tab-link>
-        <x-admin::partials.tab-link :href="route('admin.roles.index')" :active="$current === 'roles'">Roles & Access</x-admin::partials.tab-link>
-    </x-slot:navigation>
-
     <div class="space-y-6"
          x-data="roleEditor(@js($roleName), @js($checked), @js($allPermissionNames), @js($isSuperAdmin))">
 
-        <!-- Page heading + Back button on one line -->
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div>
                 <h1 class="text-2xl font-bold text-foreground tracking-tight">
@@ -86,7 +73,6 @@
             </a>
         </div>
 
-        <!-- Card 1: Role information -->
         <div class="bg-layer border border-layer-line rounded-xl p-6">
             <h2 class="text-sm font-semibold text-foreground mb-4">Role information</h2>
 
@@ -102,7 +88,6 @@
             @endif
         </div>
 
-        <!-- Card 2: Permission configuration matrix -->
         <div class="bg-layer border border-layer-line rounded-xl overflow-hidden">
             <div class="p-6 pb-4 flex flex-wrap items-center justify-between gap-3">
                 <div>
@@ -142,7 +127,6 @@
             </div>
         </div>
 
-        <!-- Save actions -->
         <div class="flex justify-end gap-2 pb-2">
             <a href="{{ route('admin.roles.index') }}"
                class="py-2.5 px-4 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-layer-line bg-layer text-muted-foreground-1 hover:bg-layer-hover hover:text-foreground focus:outline-hidden transition">
@@ -161,7 +145,6 @@
     document.addEventListener('alpine:init', () => {
         Alpine.data('roleEditor', (initialName, initialSelected, allPermissions, isSuperAdmin) => ({
             roleName: initialName,
-            // super-admin dummy data arrives as ALL permissions pre-checked
             selected: initialSelected,
             allPermissions: allPermissions,
             isSuperAdmin: isSuperAdmin,

@@ -1,6 +1,4 @@
-<!-- Comparison table rendered inside the right-side inspector panel.
-     Preline table styling via preline-bridge tokens.
-     Scope: latestPayload (structured_payload of the live/latest research). -->
+
 <div class="overflow-x-auto">
     <table class="w-full text-left text-xs divide-y divide-table-line">
         <thead>

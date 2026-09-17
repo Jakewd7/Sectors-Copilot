@@ -1,14 +1,4 @@
 @php
-    /**
-     * LLM token usage card (dummy data, Preline card styling).
-     *
-     * @var string $title
-     * @var string $subtitle
-     * @var float  $percent        0-100, drives the bar width
-     * @var string $percentLabel   e.g. "12.4% used"
-     * @var string $meta           small note under the bar
-     * @var array  $models         each: ['name', 'share' (0-100), 'requests', 'color']
-     */
     $title = $title ?? '';
     $subtitle = $subtitle ?? '';
     $percent = max(0.0, min(100.0, (float) ($percent ?? 0)));
@@ -23,7 +13,6 @@
         <p class="text-xs text-muted-foreground-1 mt-1">{{ $subtitle }}</p>
     @endif
 
-    {{-- Usage bar: segmented by model share, like the Ollama cloud usage UI --}}
     <div class="flex items-center justify-between mt-4">
         <span class="text-sm font-medium text-foreground">{{ $label ?? '' }}</span>
         <span class="text-sm text-muted-foreground-1">{{ $percentLabel }}</span>
@@ -40,7 +29,6 @@
         <p class="text-xs text-muted-foreground-1 mt-1.5">{{ $meta }}</p>
     @endif
 
-    {{-- Per-model breakdown: colored dot + name left, requests right --}}
     @if ($models)
         <div class="mt-4">
             <p class="text-xs text-muted-foreground-1 mb-2">Models used this month</p>

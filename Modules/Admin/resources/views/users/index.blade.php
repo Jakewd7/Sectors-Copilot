@@ -1,25 +1,12 @@
 <x-admin::layouts.master>
-    @php
-        $current = 'users';
-    @endphp
-
-    <x-slot:navigation>
-        <x-admin::partials.tab-link :href="route('admin.users.index')" :active="$current === 'users'">Users</x-admin::partials.tab-link>
-        <x-admin::partials.tab-link :href="route('admin.insights.index')" :active="$current === 'insights'">Market Article</x-admin::partials.tab-link>
-        <x-admin::partials.tab-link :href="route('admin.prompts.index')" :active="$current === 'prompts'">Prompt starter</x-admin::partials.tab-link>
-        <x-admin::partials.tab-link :href="route('admin.caches.index')" :active="$current === 'caches'">Cache</x-admin::partials.tab-link>
-        <x-admin::partials.tab-link :href="route('admin.roles.index')" :active="$current === 'roles'">Roles & Access</x-admin::partials.tab-link>
-    </x-slot:navigation>
-
     <!-- Dummy data comes from AdminPageController (TODO: connect to backend) -->
     <div class="space-y-6" x-data="{ editUser: null, showCreate: false }">
-        <!-- Page heading -->
+
         <div>
             <h1 class="text-2xl font-bold text-foreground tracking-tight">Users</h1>
             <p class="text-sm text-muted-foreground-1 mt-1">Manage registered accounts, their roles and account status.</p>
         </div>
 
-        <!-- Stats row + Create User button on one line (stat left, button right) -->
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div class="flex flex-wrap gap-4">
                 @foreach ($stats as $stat)
@@ -27,7 +14,6 @@
                 @endforeach
             </div>
 
-            <!-- + Create User (Preline solid button, same as Add article/Add prompt) -->
             <button type="button" @click="showCreate = true"
                 class="py-2.5 px-4 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg bg-primary border border-primary-line text-primary-foreground hover:bg-primary-hover focus:outline-hidden focus:bg-primary-focus transition">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -37,7 +23,6 @@
             </button>
         </div>
 
-        <!-- Users table (Preline tables pattern) -->
         <div class="bg-layer border border-layer-line rounded-xl overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-table-line">
@@ -78,10 +63,7 @@
                                     {{ $user['created_at'] }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-end">
                                     <div class="flex items-center justify-end gap-1.5">
-                                        <!-- Floating edit form opens on the same page (C7).
-                                             @click lives on the wrapper span: component attributes
-                                             are forwarded as literal strings, so Alpine/Blade
-                                             directives must sit outside the component tag. -->
+
                                         <span @click="editUser = @js($user)">
                                             <x-admin::partials.action-button action="edit" />
                                         </span>
@@ -97,15 +79,13 @@
                 </table>
             </div>
 
-            <!-- Pagination (Preline pattern: info left, boxed buttons right) -->
             <x-admin::partials.pagination :page="$page" :totalPages="$totalPages" :from="$from" :to="$to" :total="$total" />
         </div>
 
-        <!-- FLOATING CREATE OVERLAY (same pattern as Edit User) -->
         <div x-show="showCreate" x-cloak
             class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm overflow-y-auto"
             @keydown.escape.window="showCreate = false">
-            <!-- click-away backdrop -->
+
             <div class="absolute inset-0" @click="showCreate = false" aria-hidden="true"></div>
 
             <div class="relative w-full max-w-md bg-layer border border-layer-line rounded-2xl shadow-2xl p-6"
@@ -174,11 +154,10 @@
             </div>
         </div>
 
-        <!-- FLOATING EDIT OVERLAY (same page, per C7) — Preline modal pattern -->
         <div x-show="editUser" x-cloak
             class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm overflow-y-auto"
             @keydown.escape.window="editUser = null">
-            <!-- click-away backdrop -->
+
             <div class="absolute inset-0" @click="editUser = null" aria-hidden="true"></div>
 
             <div class="relative w-full max-w-md bg-layer border border-layer-line rounded-2xl shadow-2xl p-6"
