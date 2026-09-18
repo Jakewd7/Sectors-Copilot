@@ -2,13 +2,14 @@
 
 namespace Modules\SectorsData\Services;
 
+use Exception;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
-use Exception;
 
 class SectorsApiClient
 {
     protected string $baseUrl;
+
     protected string $apiKey;
 
     public function __construct()
@@ -28,14 +29,11 @@ class SectorsApiClient
             ->retry(2, 500);
     }
 
-    /**
-     * GET /v2/company/report/{symbol}/
-     */
     public function getCompanyReport(string $symbol, array $sections = ['overview', 'valuation', 'financials'])
     {
         $symbol = strtoupper(trim($symbol));
         $params = [];
-        if (!empty($sections)) {
+        if (! empty($sections)) {
             $params['sections'] = implode(',', $sections);
         }
 
@@ -54,9 +52,6 @@ class SectorsApiClient
         return $response->json();
     }
 
-    /**
-     * GET /v2/financials/quarterly/{symbol}/
-     */
     public function getQuarterlyFinancials(string $symbol, int $nQuarters = 4, bool $approx = true)
     {
         $symbol = strtoupper(trim($symbol));
@@ -74,14 +69,11 @@ class SectorsApiClient
         return $response->json();
     }
 
-    /**
-     * GET /v2/subsector/report/{sub_sector}/
-     */
     public function getSubsectorReport(string $subSector, array $sections = ['statistics', 'valuation', 'companies'])
     {
         $subSector = strtolower(trim(str_replace(' ', '-', $subSector)));
         $params = [];
-        if (!empty($sections)) {
+        if (! empty($sections)) {
             $params['sections'] = implode(',', $sections);
         }
 
@@ -97,9 +89,6 @@ class SectorsApiClient
         return $response->json();
     }
 
-    /**
-     * GET /v2/companies/ (Screener)
-     */
     public function screenCompanies(array $params)
     {
         $response = $this->client()->get('/companies/', $params);
@@ -111,10 +100,6 @@ class SectorsApiClient
         return $response->json();
     }
 
-    /**
-     * GET /v2/companies/top-changes/
-     * Biaya: 1 kredit per requested classification x period
-     */
     public function getTopCompanyMovers(array $params = [])
     {
         $defaultParams = [
@@ -135,10 +120,6 @@ class SectorsApiClient
         return $response->json();
     }
 
-    /**
-     * GET /v2/most-traded/
-     * Biaya: 2 kredit
-     */
     public function getMostTradedStocks(array $params = [])
     {
         $defaultParams = [
@@ -157,10 +138,6 @@ class SectorsApiClient
         return $response->json();
     }
 
-    /**
-     * GET /v2/idx-total/
-     * Biaya: 1 kredit
-     */
     public function getIdxMarketSummary(array $params = [])
     {
         $response = $this->client()->get('/idx-total/', $params);

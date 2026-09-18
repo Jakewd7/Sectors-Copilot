@@ -9,9 +9,6 @@ use Spatie\Permission\PermissionRegistrar;
 
 class RolePermissionSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
         app()[PermissionRegistrar::class]->forgetCachedPermissions();
@@ -54,7 +51,7 @@ class RolePermissionSeeder extends Seeder
                 'admin.users.manage',
                 'admin.system.cache-manage',
                 'admin.audit-logs.view',
-                // Roles & Access control (super-admin only — see $superAdminRole below)
+
                 'admin.roles.view',
                 'admin.roles.manage',
             ],

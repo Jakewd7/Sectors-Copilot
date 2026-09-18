@@ -12,9 +12,6 @@ use Illuminate\Http\Request;
 
 class WatchlistController extends Controller
 {
-    /**
-     * Tambah emiten ke watchlist user
-     */
     public function store(Request $request): RedirectResponse|JsonResponse
     {
         $validated = $request->validate([
@@ -51,9 +48,6 @@ class WatchlistController extends Controller
         return back()->with('success', "Emiten {$ticker} berhasil ditambahkan ke watchlist.");
     }
 
-    /**
-     * Hapus emiten dari watchlist user
-     */
     public function destroy(Request $request, string $ticker): RedirectResponse|JsonResponse
     {
         $watchlist = Watchlist::where('user_id', $request->user()->id)->first();

@@ -1,6 +1,5 @@
 <x-admin::layouts.master>
     <div class="space-y-6" x-data="insightEditor()">
-        <!-- Flash messages & validation alert -->
         @if (session('success'))
             <div
                 class="p-4 text-sm text-green-700 bg-green-100 dark:bg-green-950 dark:text-green-300 rounded-lg border border-green-200 dark:border-green-800">
@@ -19,14 +18,12 @@
             </div>
         @endif
 
-        <!-- Page heading -->
         <div>
             <h1 class="text-2xl font-bold text-foreground tracking-tight">Market Articles</h1>
             <p class="text-sm text-muted-foreground-1 mt-1">Publish market insight articles shown to users across the
                 app.</p>
         </div>
 
-        <!-- Stats + Add article button -->
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div class="flex flex-wrap gap-4">
                 @foreach ($stats as $stat)
@@ -43,7 +40,6 @@
             </button>
         </div>
 
-        <!-- Article list -->
         <div class="space-y-3">
             @forelse ($insights as $insight)
                 <div
@@ -82,7 +78,6 @@
             @endforelse
         </div>
 
-        <!-- CREATE / EDIT MODAL -->
         <div x-show="open" x-cloak
             class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm overflow-y-auto"
             @keydown.escape.window="open = false">

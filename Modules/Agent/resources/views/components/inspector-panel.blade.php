@@ -32,7 +32,7 @@
                     <span class="font-mono text-muted-foreground-1" x-text="step.tool || step.step"></span>
                     <span x-show="step.tool" class="text-muted-foreground-1"
                           x-text="' ×' + inspectorSteps.filter(s => s.tool === step.tool && s.status === 'success').length"></span>
-                    <span class="block text-foreground" x-text="step.message"></span>
+                    <span class="block text-foreground break-words" x-text="step.message"></span>
                     <span x-show="step.endpoint" class="block font-mono text-[10px] text-muted-foreground-1/70 break-all" x-text="step.endpoint"></span>
                 </div>
             </div>
@@ -51,7 +51,21 @@
         <template x-if="latestPayload.get_company_overview || latestPayload.get_sector_peers">
             <div>
                 <h3 class="text-xs font-bold uppercase tracking-wider text-muted-foreground-1 mb-4">Valuation matrix</h3>
-                @include('agent::components.valuation-matrix-table')
+
+                <template x-if="!hasCompanyOverview">
+                    <div class="p-3 text-xs rounded-lg border border-danger/30 bg-danger/10 text-danger space-y-1 min-w-0 overflow-hidden"
+                        role="alert">
+                        <p class="font-medium">Company data unavailable</p>
+                        <p class="text-danger/90 break-words whitespace-pre-wrap"
+                            x-text="companyOverviewError || 'The valuation feed returned no data for this company.'"></p>
+                    </div>
+                </template>
+
+                <template x-if="hasCompanyOverview">
+                    <div>
+                        @include('agent::components.valuation-matrix-table')
+                    </div>
+                </template>
             </div>
         </template>
 

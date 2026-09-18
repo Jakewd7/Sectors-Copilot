@@ -8,10 +8,6 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
-/**
- * Seeds sample Market Insights and Prompt Starters so the admin panel
- * pages render with realistic content out of the box.
- */
 class AdminDemoContentSeeder extends Seeder
 {
     public function run(): void
@@ -44,7 +40,7 @@ class AdminDemoContentSeeder extends Seeder
                     'title' => 'IHSG closes stronger, consumer stocks in demand',
                     'category' => 'Weekly review',
                     'content' => "# IHSG closes stronger, consumer stocks in demand\n\nThe composite index gained on foreign inflows, with consumer names leading the advance as analysts flag defensive rotation into staples.",
-                    'published_at' => null, // draft example
+                    'published_at' => null,
                 ],
             ];
 

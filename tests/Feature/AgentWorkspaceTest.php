@@ -126,7 +126,6 @@ class AgentWorkspaceTest extends TestCase
             'is_pinned' => false,
         ]);
 
-        // Another user must not be able to touch someone else's session.
         $this->actingAs($intruder)->patchJson("/agent/sessions/{$session->id}/rename", ['title' => 'Hacked'])
             ->assertNotFound();
         $this->actingAs($intruder)->deleteJson("/agent/sessions/{$session->id}")

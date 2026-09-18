@@ -16,7 +16,7 @@
                     :class="forwardPeVsMedian === 'undervalued' ? 'text-primary-active font-semibold' : 'text-foreground font-semibold'"
                     x-text="latestPayload.get_company_overview?.valuation?.forward_pe ?? '-'"></td>
                 <td class="py-2.5 text-right text-muted-foreground-1"
-                    x-text="subsectorMedianPe ?? '-'"></td>
+                    x-text="subsectorMedianPeLabel"></td>
             </tr>
             <tr>
                 <td class="py-2.5 text-muted-foreground-1">ROE</td>

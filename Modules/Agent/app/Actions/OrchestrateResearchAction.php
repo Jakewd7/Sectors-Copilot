@@ -40,7 +40,6 @@ class OrchestrateResearchAction
             'content' => $prompt,
         ]);
 
-        /** @var ChatMessage $assistantMessage */
         $assistantMessage = $session->messages()->create([
             'role' => 'assistant',
             'content' => '',
@@ -60,7 +59,7 @@ class OrchestrateResearchAction
             ->take(6)
             ->get()
             ->reverse()
-            ->map(fn($msg) => Content::parse(
+            ->map(fn ($msg) => Content::parse(
                 part: $msg->content ?? '',
                 role: $msg->role === 'assistant' ? Role::MODEL : Role::USER
             ))
@@ -70,9 +69,9 @@ class OrchestrateResearchAction
         $tools = $this->geminiService->getRegisteredTools();
         $toolDeclarations = $this->geminiService->getToolDeclarations();
 
-        $systemInstructionText = "Anda adalah AI Research Copilot pasar modal Indonesia (IDX) yang presisi, objektif, dan faktual. " .
-            "Gunakan tools yang tersedia untuk mengambil data bursa terkini sebelum menjawab pertanyaan emiten. " .
-            "Sajikan narasi fundamental yang tajam dan gunakan data aktual dari tools.";
+        $systemInstructionText = 'Anda adalah AI Research Copilot pasar modal Indonesia (IDX) yang presisi, objektif, dan faktual. '.
+            'Gunakan tools yang tersedia untuk mengambil data bursa terkini sebelum menjawab pertanyaan emiten. '.
+            'Sajikan narasi fundamental yang tajam dan gunakan data aktual dari tools.';
 
         $chat = $this->geminiService->getClient()
             ->generativeModel(model: $this->geminiService->getModel())
@@ -97,7 +96,7 @@ class OrchestrateResearchAction
             $toolName = $functionCall->name;
             $toolArgs = (array) $functionCall->args;
 
-            if (!isset($tools[$toolName])) {
+            if (! isset($tools[$toolName])) {
                 break;
             }
 
@@ -132,7 +131,7 @@ class OrchestrateResearchAction
                             name: $toolName,
                             response: ['result' => $data]
                         )
-                    )
+                    ),
                 ],
                 role: Role::USER
             );
@@ -153,7 +152,7 @@ class OrchestrateResearchAction
             'text' => $finalContentWithDisclaimer,
         ]);
 
-        $structuredPayload = !empty($collectedPayloads) ? [
+        $structuredPayload = ! empty($collectedPayloads) ? [
             'widget_type' => $this->detectWidgetType($collectedPayloads),
             'metrics' => $this->formatMetrics($collectedPayloads),
             'raw' => $collectedPayloads,
@@ -232,7 +231,7 @@ class OrchestrateResearchAction
             $metrics['last_price'] = $overview['price'] ?? $overview['last_price'] ?? null;
         }
 
-        return array_filter($metrics, fn($value) => !is_null($value));
+        return array_filter($metrics, fn ($value) => ! is_null($value));
     }
 
     protected function logStep(

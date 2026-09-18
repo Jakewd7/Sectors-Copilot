@@ -26,13 +26,11 @@ class UserManagementController extends Controller
             ['label' => 'Suspended Users', 'value' => number_format($suspendedUsers)],
         ];
 
-        // 2. Query data users dengan pagination
         $paginator = User::with('roles')
             ->latest('created_at')
             ->paginate(10)
             ->withQueryString();
 
-        // 3. Mapping data user agar pas dengan format blade table & Alpine.js editUser
         $users = collect($paginator->items())->map(function ($user) {
             return [
                 'id' => $user->id,
@@ -44,14 +42,12 @@ class UserManagementController extends Controller
             ];
         });
 
-        // 4. Data metadata untuk komponen pagination
         $page = $paginator->currentPage();
         $totalPages = $paginator->lastPage();
         $from = $paginator->firstItem() ?? 0;
         $to = $paginator->lastItem() ?? 0;
         $total = $paginator->total();
 
-        // 5. List available roles dari Spatie untuk dropdown modal form
         $availableRoles = Role::pluck('name');
 
         return view('admin::users.index', compact(
@@ -67,9 +63,6 @@ class UserManagementController extends Controller
         ));
     }
 
-    /**
-     * Membuat akun user baru dan menugaskan role Spatie.
-     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -87,7 +80,6 @@ class UserManagementController extends Controller
             'is_suspended' => $validated['status'] === 'inactive',
         ]);
 
-        // Assign role via Spatie
         $user->assignRole($validated['role']);
 
         $this->recordAudit($request, 'CREATE_USER', 'users', (string) $user->id, null, [
@@ -101,9 +93,6 @@ class UserManagementController extends Controller
             ->with('success', 'User created successfully.');
     }
 
-    /**
-     * Memperbarui detail akun, role Spatie, dan status suspend.
-     */
     public function update(Request $request, $id)
     {
         $user = User::findOrFail($id);
@@ -128,7 +117,6 @@ class UserManagementController extends Controller
             'is_suspended' => $validated['status'] === 'inactive',
         ]);
 
-        // Sync role via Spatie
         $user->syncRoles([$validated['role']]);
 
         $after = [
@@ -144,15 +132,12 @@ class UserManagementController extends Controller
             ->with('success', 'User updated successfully.');
     }
 
-    /**
-     * Toggle status suspend user dari tombol action table.
-     */
     public function toggleSuspend(Request $request, $id)
     {
         $user = User::findOrFail($id);
 
         $before = ['is_suspended' => $user->is_suspended];
-        $user->is_suspended = !$user->is_suspended;
+        $user->is_suspended = ! $user->is_suspended;
         $user->save();
 
         $action = $user->is_suspended ? 'SUSPEND_USER' : 'UNSUSPEND_USER';
@@ -162,12 +147,9 @@ class UserManagementController extends Controller
         ]);
 
         return redirect()->route('admin.users.index')
-            ->with('success', "User account status has been changed.");
+            ->with('success', 'User account status has been changed.');
     }
 
-    /**
-     * Helper untuk mencatat log audit ke tabel admin_audit_logs.
-     */
     protected function recordAudit(Request $request, $action, $targetTable, $targetId, $before = null, $after = null)
     {
         AdminAuditLog::create([

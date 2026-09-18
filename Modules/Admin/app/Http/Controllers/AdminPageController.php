@@ -7,12 +7,6 @@ use Illuminate\View\View;
 
 class AdminPageController extends Controller
 {
-    /**
-     * Render the admin panel page shells.
-     *
-     * All data below is DUMMY / display-only — wiring these pages to the real
-     * models, policies and mutations is handled by the backend developer.
-     */
     public function users(): View
     {
         // TODO: replace with User::with('roles')->paginate() on the backend side
@@ -27,7 +21,6 @@ class AdminPageController extends Controller
             ['name' => 'Maya Putri', 'email' => 'maya@mail.com', 'role' => 'User', 'status' => 'active', 'created_at' => 'Apr 02, 2026'],
         ];
 
-        // Simple query-string pagination over the dummy set.
         // TODO: swap for ->paginate(5) from the backend.
         $perPage = 5;
         $page = max(1, (int) request()->query('page', 1));
@@ -36,7 +29,6 @@ class AdminPageController extends Controller
         $page = min($page, $totalPages);
         $users = array_slice($allUsers, ($page - 1) * $perPage, $perPage);
 
-        // Counts ALL accounts, including inactive ones (total registered users).
         $stats = [
             ['label' => 'Total users', 'value' => (string) $total], // TODO: connect to backend
         ];
@@ -61,7 +53,6 @@ class AdminPageController extends Controller
             ['id' => 'd3', 'category' => 'Weekly review', 'title' => 'IHSG closes stronger, consumer stocks in demand', 'date' => '25 Aug 2026', 'status' => 'active'],
         ];
 
-        // Article status mirrors published_at (C8): set = active (published),
         // null = inactive (draft). TODO: connect to backend.
         $activeCount = count(array_filter($insights, fn (array $insight) => $insight['status'] === 'active'));
 
@@ -95,7 +86,7 @@ class AdminPageController extends Controller
         ];
 
         // Dummy LLM token usage for the agent (TODO: pull real aggregates from the backend,
-        // e.g. SUM(input_tokens)/SUM(output_tokens) grouped by model over a rolling window).
+
         $llmUsage = [
             'daily' => [
                 'label' => 'Daily usage',
@@ -120,8 +111,6 @@ class AdminPageController extends Controller
     }
 
     /**
-     * Roles & Access Control index — mirrors the Spatie roles/permissions tables.
-     * DUMMY data mirrors the seeded DB state (4 roles, 28 permissions).
      * TODO(backend): replace with Role::withCount('permissions')->paginate().
      */
     public function roles(): View
@@ -133,7 +122,6 @@ class AdminPageController extends Controller
             ['id' => 4, 'name' => 'super-admin', 'guard' => 'web', 'permissions' => 30],
         ];
 
-        // Simple query-string pagination over the dummy set.
         // TODO(backend): swap for ->paginate(5) from the backend.
         $perPage = 5;
         $page = max(1, (int) request()->query('page', 1));
@@ -153,8 +141,6 @@ class AdminPageController extends Controller
     }
 
     /**
-     * Edit Role & Access page — role name + full permission matrix.
-     * Dummy data mirrors the seeded roles/permissions + role_has_permissions.
      * TODO(backend): replace with Role::findById($id) + sync() on save.
      */
     public function roleEdit(string $id): View
@@ -195,7 +181,7 @@ class AdminPageController extends Controller
             ],
             '4' => [
                 'name' => 'super-admin',
-                'permissions' => [], // empty = ALL permissions checked
+                'permissions' => [],
             ],
         ];
 
@@ -209,9 +195,6 @@ class AdminPageController extends Controller
         ]);
     }
 
-    /**
-     * Create Role page — same form as edit, empty state.
-     */
     public function roleCreate(): View
     {
         return view('admin::roles.edit', [

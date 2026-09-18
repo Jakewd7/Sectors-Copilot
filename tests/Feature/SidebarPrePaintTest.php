@@ -7,24 +7,6 @@ use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Regression guard for the PRE-PAINT app chrome
- * (resources/views/partials/prepaint-script.blade.php).
- *
- * Both the theme and the sidebar rail are derived from localStorage, which the
- * server cannot read, while the Vite bundle is an ES module that boots AFTER the
- * first paint. Applied from the bundle alone they therefore paint the server's
- * default first and snap to the stored value afterwards: a dark->light flicker
- * and a sidebar that opens for ~0.3s before collapsing. Both were reported by
- * the user as the same bug.
- *
- * The fix puts the FIRST paint in one inline, non-deferred script in <head> and
- * exposes a single `window.SectorsChrome` definition that the bundled runtime
- * calls instead of duplicating the logic.
- *
- * These are ORDERING and SINGLE-SOURCE assertions — a flash is a timing bug, so
- * proving the script runs before the body is painted is the real check.
- */
 class SidebarPrePaintTest extends TestCase
 {
     use RefreshDatabase;
@@ -39,7 +21,6 @@ class SidebarPrePaintTest extends TestCase
         return $user;
     }
 
-    /** Pages that render the global shell (sidebar present). */
     protected function shellPages(): array
     {
         return ['/dashboard', '/admin/users', '/admin/caches', '/workspace/profile'];
@@ -73,7 +54,6 @@ class SidebarPrePaintTest extends TestCase
     {
         $html = $this->actingAs($this->adminUser())->get('/dashboard')->getContent();
 
-        // One definition of each writer, exposed once, so the runtime cannot drift.
         $this->assertSame(
             1,
             substr_count($html, 'applyTheme: function'),
@@ -95,12 +75,9 @@ class SidebarPrePaintTest extends TestCase
     {
         $html = $this->actingAs($this->adminUser())->get('/admin/users')->getContent();
 
-        // The static hooks the CSS targets must be present in the server HTML...
         $this->assertStringContainsString('sidebar-hide-collapsed', $html);
         $this->assertStringContainsString('sidebar-hide-expanded', $html);
 
-        // ...and the old Alpine-only mechanism must be gone from the sidebar
-        // markup, otherwise the first paint would still depend on Alpine timing.
         $this->assertStringNotContainsString(
             ":class=\"{ 'lg:hidden': sidebarCollapsed }\"",
             $html,
@@ -112,8 +89,6 @@ class SidebarPrePaintTest extends TestCase
     {
         $html = $this->actingAs($this->adminUser())->get('/admin/users')->getContent();
 
-        // A :style binding on the <aside> would fight the pre-paint custom property
-        // during drag-resize (two writers for --sidebar-w).
         $this->assertStringNotContainsString(
             ':style="`--sidebar-w:',
             $html,
@@ -143,8 +118,6 @@ class SidebarPrePaintTest extends TestCase
 
     public function test_auth_pages_get_the_theme_half_but_not_the_sidebar_half(): void
     {
-        // Auth pages are standalone (no shell, no sidebar): they must still avoid
-        // the theme flicker, but must not ship dead sidebar code.
         foreach (['/login', '/register'] as $uri) {
             $html = $this->get($uri)->getContent();
 
@@ -173,7 +146,6 @@ class SidebarPrePaintTest extends TestCase
             $built .= file_get_contents($asset);
         }
 
-        // Must be unlayered + scoped to lg, or they lose the cascade / break mobile.
         $this->assertStringContainsString('.sidebar-collapsed .sidebar-hide-collapsed', $built);
         $this->assertStringContainsString('.sidebar-collapsed .sidebar-hide-expanded', $built);
         $this->assertStringContainsString('--sidebar-w', $built);

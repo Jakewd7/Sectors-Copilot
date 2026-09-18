@@ -127,8 +127,6 @@ class AgentWorkspaceController extends Controller
             ->where('user_id', $request->user()->id)
             ->firstOrFail();
 
-        // Messages and their step logs cascade via the schema's foreign keys;
-        // delete explicitly so the behaviour is identical if that ever changes.
         $session->messages()->delete();
         $session->delete();
 

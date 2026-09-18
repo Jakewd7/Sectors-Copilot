@@ -11,10 +11,6 @@ class AdminPanelPageTest extends TestCase
 {
     use RefreshDatabase;
 
-    /**
-     * Admin pages are guarded by Spatie permissions, so these tests need the
-     * seeded roles/permissions and a user holding the matching role.
-     */
     protected function adminUser(): User
     {
         $this->seed(RolePermissionSeeder::class);
@@ -81,7 +77,6 @@ class AdminPanelPageTest extends TestCase
     {
         $this->seed(RolePermissionSeeder::class);
 
-        // No role at all -> holds none of the admin.* permissions.
         $user = User::factory()->create();
 
         $this->actingAs($user)->get('/admin/users')->assertForbidden();
@@ -90,10 +85,8 @@ class AdminPanelPageTest extends TestCase
 
     public function test_roles_and_access_is_super_admin_only(): void
     {
-        // `admin` deliberately does NOT hold admin.roles.*
         $this->actingAs($this->adminUser())->get('/admin/roles')->assertForbidden();
 
-        // super-admin holds every permission, including admin.roles.view
         $this->actingAs($this->superAdminUser())->get('/admin/roles')->assertOk();
     }
 
@@ -103,24 +96,18 @@ class AdminPanelPageTest extends TestCase
 
         $this->actingAs($superAdmin)->get('/admin/roles')
             ->assertOk()
-            // Index heading is literal markup (Blade does not escape it)...
+
             ->assertSee('Role & Access Control', escape: false)
             ->assertSee('super-admin')
             ->assertSee('permissions');
 
         $this->actingAs($superAdmin)->get('/admin/roles/1/edit')
             ->assertOk()
-            // ...while the edit heading goes through {{ }} and IS escaped.
+
             ->assertSee('Edit Role & Access')
             ->assertSee('Permission configuration');
     }
 
-    /**
-     * The article form uses a WYSIWYG (Quill) editor instead of the old Markdown
-     * textarea. Regression guard: the textarea must stay gone, the editor host must
-     * be present, and Quill must load from its OWN Vite entry so the ~200KB library
-     * never lands in the shared app.js bundle.
-     */
     public function test_article_form_uses_wysiwyg_editor_not_markdown_textarea(): void
     {
         $html = $this->actingAs($this->adminUser())->get('/admin/market-insights')->getContent();
@@ -132,9 +119,6 @@ class AdminPanelPageTest extends TestCase
         $this->assertStringNotContainsString('form.content.trim()', $html);
         $this->assertStringNotContainsString('renderMarkdown', $html, 'Markdown preview must be gone.');
 
-        // Alpine owns the content through a hidden input; both submit paths must sync
-        // the editor into form.content first — the form's @submit (Publish) and the
-        // Save draft button. Plus one occurrence for the method definition itself.
         $this->assertSame(
             3,
             substr_count($html, 'syncContent'),
@@ -142,12 +126,6 @@ class AdminPanelPageTest extends TestCase
         );
     }
 
-    /**
-     * Admin navigation lives ONLY in the sidebar. The panel has no top bar, so the
-     * shell must not render a section-navigation region, and every admin page must
-     * be reachable from the sidebar that is filtered by the same permissions as the
-     * routes — a user must never see a link that answers 403.
-     */
     public function test_admin_navigation_is_sidebar_only_and_permission_filtered(): void
     {
         $this->seed(RolePermissionSeeder::class);
@@ -169,7 +147,6 @@ class AdminPanelPageTest extends TestCase
 
             $html = $this->actingAs($user)->get('/admin/users')->getContent();
 
-            // No top bar anywhere: the shell's section-navigation region is gone.
             $this->assertStringNotContainsString(
                 'aria-label="Section navigation"',
                 $html,
@@ -187,7 +164,6 @@ class AdminPanelPageTest extends TestCase
                 $this->assertArrayNotHasKey($label, $links, "[{$role}] must not see '{$label}' in the sidebar.");
             }
 
-            // Anything the sidebar links to must actually open for that role.
             foreach ($links as $label => $href) {
                 $this->assertSame(
                     200,
@@ -198,11 +174,6 @@ class AdminPanelPageTest extends TestCase
         }
     }
 
-    /**
-     * Admin sidebar links, keyed by label -> href.
-     *
-     * @return array<string, string>
-     */
     protected function sidebarAdminLinks(string $html): array
     {
         $dom = new \DOMDocument;

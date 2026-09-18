@@ -495,6 +495,24 @@
                     return years.length ? history[years[years.length - 1]].pe : null;
                 },
 
+                get subsectorMedianPeLabel() {
+                    const pe = parseFloat(this.subsectorMedianPe);
+
+                    return isNaN(pe) ? '-' : pe.toFixed(2) + 'x';
+                },
+
+                get companyOverviewError() {
+                    return this.latestPayload?.get_company_overview?.error ?? '';
+                },
+
+                get hasCompanyOverview() {
+                    const overview = this.latestPayload?.get_company_overview;
+
+                    if (!overview || overview.error) return false;
+
+                    return Boolean(overview.symbol || overview.valuation || overview.overview);
+                },
+
                 renderMarkdown(content) {
                     if (!content) return '';
                     return typeof marked !== 'undefined' ? marked.parse(content) : content.replace(
@@ -602,12 +620,16 @@
                         }
 
                         if (lastMsg.step_logs && lastMsg.step_logs.length > 0) {
-                            this.inspectorSteps = lastMsg.step_logs.map(log => ({
-                                status: log.status ?? 'success',
-                                tool: log.tool_name ?? log.tool,
-                                message: log.message ?? log.action,
-                                endpoint: log.endpoint ?? null
-                            }));
+                            this.inspectorSteps = lastMsg.step_logs.map(log => {
+                                const error = log.payload_data?.error ?? log.error_message ?? '';
+
+                                return {
+                                    status: error ? 'failed' : (log.status ?? 'success'),
+                                    tool: log.tool_name ?? log.step_type ?? 'Inspector',
+                                    message: error || log.message || '',
+                                    endpoint: log.endpoint ?? null
+                                };
+                            });
                         }
                     }
                 },
@@ -1020,22 +1042,29 @@
                 handleInspectorEvent(data) {
                     this.updateTimestamp();
 
+                    const toolError = this.toolErrorMessage(data.payload);
+                    const incoming = toolError ? {
+                        ...data,
+                        status: 'failed',
+                        message: toolError,
+                    } : data;
+
                     const existingStepIndex = this.inspectorSteps.findIndex(
-                        s => (s.tool && s.tool === data.tool) || (s.endpoint && s.endpoint === data
+                        s => (s.tool && s.tool === incoming.tool) || (s.endpoint && s.endpoint === incoming
                             .endpoint)
                     );
 
-                    if (existingStepIndex !== -1 && data.status !== 'running') {
+                    if (existingStepIndex !== -1 && incoming.status !== 'running') {
                         this.inspectorSteps[existingStepIndex] = {
                             ...this.inspectorSteps[existingStepIndex],
-                            ...data
+                            ...incoming
                         };
                     } else {
                         this.inspectorSteps.push({
-                            status: data.status || 'running',
-                            tool: data.tool || data.step || 'Inspector',
-                            message: data.message || '',
-                            endpoint: data.endpoint || null
+                            status: incoming.status || 'running',
+                            tool: incoming.tool || incoming.step || 'Inspector',
+                            message: incoming.message || '',
+                            endpoint: incoming.endpoint || null
                         });
                     }
 
@@ -1045,6 +1074,17 @@
                             ...data.payload
                         };
                     }
+                },
+
+                toolErrorMessage(payload) {
+                    if (!payload) return '';
+
+                    const failed = Object.values(payload).find(
+                        (value) => value && typeof value === 'object' && typeof value.error ===
+                            'string'
+                    );
+
+                    return failed ? failed.error : '';
                 }
             }));
         });

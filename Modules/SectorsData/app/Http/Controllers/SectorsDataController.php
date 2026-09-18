@@ -3,7 +3,6 @@
 namespace Modules\SectorsData\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Modules\SectorsData\Services\CachedSectorsService;
 use Throwable;
@@ -17,9 +16,6 @@ class SectorsDataController extends Controller
         $this->sectorsService = $sectorsService;
     }
 
-    /**
-     * GET /api/v1/sectors/company/{symbol}/overview
-     */
     public function companyOverview(string $symbol)
     {
         try {
@@ -39,9 +35,6 @@ class SectorsDataController extends Controller
         }
     }
 
-    /**
-     * GET /api/v1/sectors/company/{symbol}/financials
-     */
     public function companyFinancials(Request $request, string $symbol)
     {
         $validated = $request->validate([
@@ -66,9 +59,6 @@ class SectorsDataController extends Controller
         }
     }
 
-    /**
-     * GET /api/v1/sectors/subsector/{subSector}/peers
-     */
     public function subsectorPeers(string $subSector)
     {
         try {
@@ -88,9 +78,6 @@ class SectorsDataController extends Controller
         }
     }
 
-    /**
-     * GET /api/v1/sectors/screener
-     */
     public function screener(Request $request)
     {
         $validated = $request->validate([
@@ -123,9 +110,6 @@ class SectorsDataController extends Controller
         }
     }
 
-    /**
-     * GET /api/v1/sectors/market/top-movers
-     */
     public function topMovers(Request $request)
     {
         $validated = $request->validate([
@@ -153,9 +137,6 @@ class SectorsDataController extends Controller
         }
     }
 
-    /**
-     * GET /api/v1/sectors/market/most-traded
-     */
     public function mostTraded(Request $request)
     {
         $validated = $request->validate([
@@ -183,9 +164,6 @@ class SectorsDataController extends Controller
         }
     }
 
-    /**
-     * GET /api/v1/sectors/market/summary
-     */
     public function marketSummary(Request $request)
     {
         $validated = $request->validate([
