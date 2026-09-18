@@ -29,7 +29,7 @@ Thumbs.db
 # AI assistant skills & tooling (local to each machine, not part of the app)
 IDEA.md
 boost.json
+.agents/
+.codegraph/
 CLAUDE.md
-/.agents/
-/.codegraph/
 skills-lock.json

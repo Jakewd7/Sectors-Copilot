@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use Modules\Admin\Http\Controllers\AdminPageController;
+use Modules\Admin\Http\Controllers\MarketInsightCmsController;
+use Modules\Admin\Http\Controllers\UserManagementController;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,19 +28,32 @@ use Modules\Admin\Http\Controllers\AdminPageController;
 */
 
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/users', [AdminPageController::class, 'users'])
-        ->middleware('can:admin.users.view')->name('users.index');
+    Route::middleware('can:admin.users.view')->group(function () {
+        Route::get('/users', [UserManagementController::class, 'index'])->name('users.index');
+    });
 
-    Route::get('/market-insights', [AdminPageController::class, 'marketInsights'])
-        ->middleware('can:admin.insights.manage')->name('insights.index');
+    Route::middleware('can:admin.users.manage')->group(function () {
+        Route::post('/users', [UserManagementController::class, 'store'])->name('users.store');
+        Route::put('/users/{id}', [UserManagementController::class, 'update'])->name('users.update');
+        Route::patch('/users/{id}/suspend', [UserManagementController::class, 'toggleSuspend'])
+            ->name('users.suspend');
+    });
 
-    Route::get('/prompt-starters', [AdminPageController::class, 'promptStarters'])
-        ->middleware('can:admin.prompts.manage')->name('prompts.index');
+    Route::middleware('can:admin.insights.manage')->group(function () {
+        Route::get('/market-insights', [MarketInsightCmsController::class, 'index'])->name('insights.index');
+        Route::post('/market-insights', [MarketInsightCmsController::class, 'store'])->name('insights.store');
+        Route::put('/market-insights/{id}', [MarketInsightCmsController::class, 'update'])->name('insights.update');
+        Route::delete('/market-insights/{id}', [MarketInsightCmsController::class, 'destroy'])->name('insights.destroy');
+    });
 
-    Route::get('/caches', [AdminPageController::class, 'caches'])
-        ->middleware('can:admin.system.cache-manage')->name('caches.index');
+    Route::middleware('can:admin.prompts.manage')->group(function () {
+        Route::get('/prompt-starters', [AdminPageController::class, 'promptStarters'])->name('prompts.index');
+    });
 
-    // Roles & Access — super-admin only (admin.roles.* is not granted to `admin`).
+    Route::middleware('can:admin.system.cache-manage')->group(function () {
+        Route::get('/caches', [AdminPageController::class, 'caches'])->name('caches.index');
+    });
+
     Route::middleware('can:admin.roles.view')->group(function () {
         Route::get('/roles', [AdminPageController::class, 'roles'])->name('roles.index');
         Route::get('/roles/{id}/edit', [AdminPageController::class, 'roleEdit'])->name('roles.edit');

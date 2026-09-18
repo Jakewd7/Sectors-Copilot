@@ -1,12 +1,32 @@
 <x-admin::layouts.master>
-    <!-- Dummy data comes from AdminPageController (TODO: connect to backend) -->
     <div class="space-y-6" x-data="{ editUser: null, showCreate: false }">
+        <!-- Flash messages & validation alert -->
+        @if (session('success'))
+            <div
+                class="p-4 text-sm text-green-700 bg-green-100 dark:bg-green-950 dark:text-green-300 rounded-lg border border-green-200 dark:border-green-800">
+                {{ session('success') }}
+            </div>
+        @endif
 
+        @if ($errors->any())
+            <div
+                class="p-4 text-sm text-red-700 bg-red-100 dark:bg-red-950 dark:text-red-300 rounded-lg border border-red-200 dark:border-red-800">
+                <ul class="list-disc list-inside space-y-1">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
+        <!-- Page heading -->
         <div>
             <h1 class="text-2xl font-bold text-foreground tracking-tight">Users</h1>
-            <p class="text-sm text-muted-foreground-1 mt-1">Manage registered accounts, their roles and account status.</p>
+            <p class="text-sm text-muted-foreground-1 mt-1">Manage registered accounts, their roles and account status.
+            </p>
         </div>
 
+        <!-- Stats row + Create User button -->
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div class="flex flex-wrap gap-4">
                 @foreach ($stats as $stat)
@@ -23,6 +43,7 @@
             </button>
         </div>
 
+        <!-- Users table -->
         <div class="bg-layer border border-layer-line rounded-xl overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-table-line">
@@ -49,12 +70,12 @@
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-table-line">
-                        @foreach ($users as $user)
+                        @forelse ($users as $user)
                             <tr class="hover:bg-layer-hover/60 transition">
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground">
                                     {{ $user['name'] }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground-1">
-                                    {{ $user['email'] }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground-1">{{ $user['email'] }}
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">{{ $user['role'] }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <x-admin::partials.status-badge :status="$user['status']" />
@@ -63,29 +84,44 @@
                                     {{ $user['created_at'] }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-end">
                                     <div class="flex items-center justify-end gap-1.5">
-
-                                        <span @click="editUser = @js($user)">
+                                        <!-- Edit button -->
+                                        <span @click="editUser = @js($user)" class="cursor-pointer">
                                             <x-admin::partials.action-button action="edit" />
                                         </span>
-                                        <!-- TODO: connect suspend/unsuspend action to backend -->
-                                        <span @click="alert('TODO: connect suspend toggle to backend')">
-                                            <x-admin::partials.action-button action="delete" />
-                                        </span>
+
+                                        <!-- Toggle Suspend Form -->
+                                        <form method="POST" action="{{ route('admin.users.suspend', $user['id']) }}"
+                                            class="inline"
+                                            onsubmit="return confirm('Change status for {{ addslashes($user['name']) }}?')">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button type="submit" class="inline-flex">
+                                                <x-admin::partials.action-button action="delete" />
+                                            </button>
+                                        </form>
                                     </div>
                                 </td>
                             </tr>
-                        @endforeach
+                        @empty
+                            <tr>
+                                <td colspan="6" class="px-6 py-8 text-center text-sm text-muted-foreground-1">
+                                    No users found.
+                                </td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
 
-            <x-admin::partials.pagination :page="$page" :totalPages="$totalPages" :from="$from" :to="$to" :total="$total" />
+            <!-- Pagination -->
+            <x-admin::partials.pagination :page="$page" :totalPages="$totalPages" :from="$from" :to="$to"
+                :total="$total" />
         </div>
 
+        <!-- FLOATING CREATE OVERLAY -->
         <div x-show="showCreate" x-cloak
             class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm overflow-y-auto"
             @keydown.escape.window="showCreate = false">
-
             <div class="absolute inset-0" @click="showCreate = false" aria-hidden="true"></div>
 
             <div class="relative w-full max-w-md bg-layer border border-layer-line rounded-2xl shadow-2xl p-6"
@@ -95,39 +131,39 @@
                     <button type="button"
                         class="w-8 h-8 rounded-lg hover:bg-layer-hover text-muted-foreground-1 transition inline-flex justify-center items-center"
                         @click="showCreate = false" aria-label="Close">
-                        <svg class="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
                 </div>
 
-                <!-- TODO: wire form submit to backend (admin.users.store) -->
-                <form class="space-y-4" @submit.prevent="showCreate = false">
+                <form method="POST" action="{{ route('admin.users.store') }}" class="space-y-4">
+                    @csrf
                     <div>
                         <label class="block text-sm mb-2 text-foreground">Name</label>
-                        <input type="text" required
+                        <input type="text" name="name" required value="{{ old('name') }}"
                             class="py-2.5 px-4 block w-full bg-form-field form-field-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground-1 focus:border-primary-focus focus:ring-primary-focus transition"
                             placeholder="username">
                     </div>
                     <div>
                         <label class="block text-sm mb-2 text-foreground">Email</label>
-                        <input type="email" required
+                        <input type="email" name="email" required value="{{ old('email') }}"
                             class="py-2.5 px-4 block w-full bg-form-field form-field-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground-1 focus:border-primary-focus focus:ring-primary-focus transition"
                             placeholder="name@company.com">
                     </div>
                     <div>
                         <label class="block text-sm mb-2 text-foreground">Role</label>
-                        <select
+                        <select name="role" required
                             class="py-2.5 px-4 block w-full bg-form-field form-field-border form-select rounded-lg text-sm text-foreground focus:border-primary-focus focus:ring-primary-focus transition">
-                            <option>User</option>
-                            <option>Analyst</option>
-                            <option>Admin</option>
+                            @foreach ($availableRoles as $role)
+                                <option value="{{ $role }}">{{ $role }}</option>
+                            @endforeach
                         </select>
                     </div>
                     <div>
                         <label class="block text-sm mb-2 text-foreground">Status</label>
-                        <select
+                        <select name="status" required
                             class="py-2.5 px-4 block w-full bg-form-field form-field-border form-select rounded-lg text-sm text-foreground focus:border-primary-focus focus:ring-primary-focus transition">
                             <option value="active">Active</option>
                             <option value="inactive">Inactive</option>
@@ -135,7 +171,7 @@
                     </div>
                     <div>
                         <label class="block text-sm mb-2 text-foreground">Password</label>
-                        <input type="password" required
+                        <input type="password" name="password" required
                             class="py-2.5 px-4 block w-full bg-form-field form-field-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground-1 focus:border-primary-focus focus:ring-primary-focus transition"
                             placeholder="Temporary password">
                     </div>
@@ -154,10 +190,10 @@
             </div>
         </div>
 
+        <!-- FLOATING EDIT OVERLAY -->
         <div x-show="editUser" x-cloak
             class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm overflow-y-auto"
             @keydown.escape.window="editUser = null">
-
             <div class="absolute inset-0" @click="editUser = null" aria-hidden="true"></div>
 
             <div class="relative w-full max-w-md bg-layer border border-layer-line rounded-2xl shadow-2xl p-6"
@@ -167,37 +203,38 @@
                     <button type="button"
                         class="w-8 h-8 rounded-lg hover:bg-layer-hover text-muted-foreground-1 transition inline-flex justify-center items-center"
                         @click="editUser = null" aria-label="Close">
-                        <svg class="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
                 </div>
 
-                <!-- TODO: wire form submit to backend (admin.users.update) -->
-                <form class="space-y-4" @submit.prevent="editUser = null">
+                <form method="POST" :action="`{{ url('admin/users') }}/${editUser?.id}`" class="space-y-4">
+                    @csrf
+                    @method('PUT')
                     <div>
                         <label class="block text-sm mb-2 text-foreground">Name</label>
-                        <input type="text" x-model="editUser.name"
+                        <input type="text" name="name" x-model="editUser.name" required
                             class="py-2.5 px-4 block w-full bg-form-field form-field-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground-1 focus:border-primary-focus focus:ring-primary-focus transition">
                     </div>
                     <div>
                         <label class="block text-sm mb-2 text-foreground">Email</label>
-                        <input type="email" x-model="editUser.email"
+                        <input type="email" name="email" x-model="editUser.email" required
                             class="py-2.5 px-4 block w-full bg-form-field form-field-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground-1 focus:border-primary-focus focus:ring-primary-focus transition">
                     </div>
                     <div>
                         <label class="block text-sm mb-2 text-foreground">Role</label>
-                        <select x-model="editUser.role"
+                        <select name="role" x-model="editUser.role" required
                             class="py-2.5 px-4 block w-full bg-form-field form-field-border form-select rounded-lg text-sm text-foreground focus:border-primary-focus focus:ring-primary-focus transition">
-                            <option>User</option>
-                            <option>Analyst</option>
-                            <option>Admin</option>
+                            @foreach ($availableRoles as $role)
+                                <option value="{{ $role }}">{{ $role }}</option>
+                            @endforeach
                         </select>
                     </div>
                     <div>
                         <label class="block text-sm mb-2 text-foreground">Status</label>
-                        <select x-model="editUser.status"
+                        <select name="status" x-model="editUser.status" required
                             class="py-2.5 px-4 block w-full bg-form-field form-field-border form-select rounded-lg text-sm text-foreground focus:border-primary-focus focus:ring-primary-focus transition">
                             <option value="active">Active</option>
                             <option value="inactive">Inactive</option>

@@ -40,7 +40,7 @@ class AdminPanelPageTest extends TestCase
         $response = $this->actingAs($this->adminUser())->get('/admin/users');
 
         $response->assertOk();
-        $response->assertSee('Total users');
+        $response->assertSee('Total Users');
         $response->assertSee('Edit User');
     }
 
