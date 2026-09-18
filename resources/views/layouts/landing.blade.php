@@ -42,7 +42,7 @@
             <div>
                 <a href="{{ \Illuminate\Support\Facades\Route::has('register') ? route('register') : '#' }}"
                     class="px-4 py-2 bg-accent text-white rounded-xl text-xs font-semibold hover:bg-accent-dim transition shadow-sm inline-flex items-center gap-1.5">
-                    <span>Bergabung sekarang</span>
+                    <span>{{ __('topbar_button') }}</span>
                     <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
                 </a>
             </div>
