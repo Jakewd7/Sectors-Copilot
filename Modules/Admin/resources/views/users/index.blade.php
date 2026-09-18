@@ -74,7 +74,8 @@
                         @forelse ($users as $user)
                             <tr class="hover:bg-layer-hover/60 transition">
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground">
-                                    {{ $user['name'] }}</td>
+                                    {{ $user['name'] }}
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground-1">{{ $user['email'] }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">{{ $user['role'] }}</td>
@@ -82,7 +83,8 @@
                                     <x-admin::partials.status-badge :status="$user['status']" />
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground-1">
-                                    {{ $user['created_at'] }}</td>
+                                    {{ $user['created_at'] }}
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-end">
                                     <div class="flex items-center justify-end gap-1.5">
                                         <span @click="editUser = @js($user)" class="cursor-pointer">

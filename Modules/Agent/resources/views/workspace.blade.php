@@ -2,7 +2,12 @@
 
 @section('content')
     <div data-hs-layout-splitter='{"horizontalSplitterClasses": "hs-layout-splitter-control"}'
-        class="flex h-full bg-base text-foreground overflow-hidden font-sans" x-data="copilotWorkspace('{{ $activeSession->id ?? '' }}')">
+        class="flex h-full bg-base text-foreground overflow-hidden font-sans" x-data="copilotWorkspace({
+                        initialSessionId: '{{ $activeSession->id ?? '' }}',
+                        initialSessionTitle: '{{ addslashes($activeSession->title ?? '') }}',
+                        initialMessages: @js($activeSession ? $activeSession->messages : []),
+                        initialPrompt: '{{ addslashes($initialPrompt ?? '') }}'
+                    })">
 
         <div data-hs-layout-splitter-horizontal-group class="flex h-full w-full min-w-0">
 
@@ -43,26 +48,6 @@
 
                 <div class="flex-1 overflow-y-auto p-6 space-y-6" id="message-container">
 
-                    <template x-if="demoMode">
-                        <div class="space-y-6">
-                            <div class="flex justify-end">
-                                <div
-                                    class="max-w-2xl bg-primary border border-primary-line text-primary-foreground p-4 rounded-2xl rounded-br-sm text-sm leading-relaxed">
-                                    Compare BBCA, BBRI and BMRI valuation against their sector
-                                </div>
-                            </div>
-                            <div>
-                                <div class="max-w-2xl bg-card border border-card-line text-foreground p-4 rounded-2xl rounded-bl-sm text-sm leading-relaxed shadow-2xs"
-                                    x-html="renderMarkdown('**BBCA** trades at a premium: forward P/E of **14.1x** vs the banks subsector median of **10.26x**, backed by the highest ROE in the group (**20.4%**).\n\n- **BBRI** offers the best dividend yield at ~6.1%\n- **BMRI** is the cheapest on P/E at ~6.7x\n\nFull breakdown is available in the valuation matrix on the right panel.')">
-                                </div>
-                                <p class="mt-3 text-[11px] text-muted-foreground-1">
-                                    Disclaimer: analysis is auto-generated for research reference only — not investment
-                                    advice.
-                                </p>
-                            </div>
-                        </div>
-                    </template>
-
                     <template x-for="msg in messages" :key="msg.id">
                         <div class="space-y-3">
 
@@ -70,8 +55,8 @@
                                 <div class="max-w-3xl bg-card border border-card-line border-l-4 border-l-rose-500 rounded-2xl rounded-bl-md p-4 shadow-2xs"
                                     role="alert">
                                     <div class="flex items-start gap-3">
-                                        <svg class="size-5 shrink-0 text-rose-500 mt-0.5" fill="none"
-                                            stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
+                                        <svg class="size-5 shrink-0 text-rose-500 mt-0.5" fill="none" stroke="currentColor"
+                                            stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
                                             <path stroke-linecap="round" stroke-linejoin="round"
                                                 d="M12 9v4m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" />
                                         </svg>
@@ -100,8 +85,8 @@
 
                             <template x-if="!msg.error">
                                 <div :class="msg.role === 'user' ?
-                                    'bg-primary border border-primary-line text-primary-foreground ml-auto rounded-2xl rounded-br-md' :
-                                    'bg-card border border-card-line text-foreground rounded-2xl rounded-bl-md'"
+                                            'bg-primary border border-primary-line text-primary-foreground ml-auto rounded-2xl rounded-br-md' :
+                                            'bg-card border border-card-line text-foreground rounded-2xl rounded-bl-md'"
                                     class="max-w-3xl p-4 shadow-2xs">
                                     <span class="text-[11px] font-semibold uppercase tracking-wider block mb-1 opacity-70"
                                         x-text="msg.role"></span>
@@ -303,144 +288,43 @@
         });
 
         document.addEventListener('alpine:init', () => {
-            Alpine.data('copilotWorkspace', (initialSessionId = '') => ({
-                activeSessionId: initialSessionId,
-                sessionTitle: '',
+            Alpine.data('copilotWorkspace', (config = {}) => ({
+                activeSessionId: config.initialSessionId || '',
+                sessionTitle: config.initialSessionTitle || '',
                 sessionList: @js(
                     $sessions->map(
-                            fn($s) => [
-                                'id' => $s->id,
-                                'title' => $s->title,
-                                'is_pinned' => (bool) $s->is_pinned,
-                                'updated_at' => optional($s->updated_at)->toISOString(),
-                            ],
-                        )->values()
+                        fn($s) => [
+                            'id' => $s->id,
+                            'title' => $s->title,
+                            'is_pinned' => (bool) $s->is_pinned,
+                            'updated_at' => optional($s->updated_at)->toISOString(),
+                        ],
+                    )->values()
                 ),
-                userPrompt: '',
-                messages: [],
+                userPrompt: config.initialPrompt || '',
+                messages: config.initialMessages || [],
                 isResearching: false,
-                demoMode: false,
                 inspectorVisible: true,
-                csrfToken: document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ||
-                    '',
+                csrfToken: document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
                 inspectorSteps: [],
                 currentStepTime: '',
                 latestPayload: null,
-                subsectorMedianPe: null,
+                _subsectorMedianPe: null,
                 renameTarget: null,
                 renameTitle: '',
                 deleteTarget: null,
                 busy: false,
 
-                // TODO(backend): remove when the SSE pipeline is fully accepted.
-                demoSteps: [{
-                        step: 'planning',
-                        tool: null,
-                        status: 'success',
-                        endpoint: null,
-                        message: 'Identified comparison intent for 3 major banks (BBCA, BBRI, BMRI)'
-                    },
-                    {
-                        step: 'tool_execution',
-                        tool: 'get_company_overview',
-                        status: 'success',
-                        endpoint: '/companies/BBCA/overview',
-                        message: 'Data successfully retrieved from /companies/BBCA/overview.'
-                    },
-                    {
-                        step: 'tool_execution',
-                        tool: 'get_company_overview',
-                        status: 'success',
-                        endpoint: '/companies/BBRI/overview',
-                        message: 'Data successfully retrieved from /companies/BBRI/overview.'
-                    },
-                    {
-                        step: 'tool_execution',
-                        tool: 'get_sector_peers',
-                        status: 'success',
-                        endpoint: '/subsectors/banks/peers',
-                        message: 'Data successfully retrieved from /subsectors/banks/peers.'
-                    },
-                    {
-                        step: 'synthesis',
-                        tool: null,
-                        status: 'success',
-                        endpoint: null,
-                        message: 'Analysis matrix composed and compliance disclaimer attached'
-                    },
-                ],
-
-                demoPayload: {
-                    get_company_overview: {
-                        symbol: 'BBCA.JK',
-                        company_name: 'PT Bank Central Asia Tbk.',
-                        overview: {
-                            sector: 'Financials',
-                            sub_sector: 'Banks',
-                            market_cap: 817683406650000
-                        },
-                        valuation: {
-                            forward_pe: 14.1,
-                            intrinsic_value: 13694,
-                            last_close_price: 6700
-                        },
-                        financials: {
-                            historical_financial_ratio: [{
-                                    year: '2024',
-                                    profitability: {
-                                        roe: 0.2017,
-                                        roa: 0.0378,
-                                        net_profit_margin: 0.5063
-                                    }
-                                },
-                                {
-                                    year: '2025',
-                                    profitability: {
-                                        roe: 0.2043,
-                                        roa: 0.0363,
-                                        net_profit_margin: 0.5137
-                                    }
-                                },
-                            ],
-                        },
-                        dividend: {
-                            yield_ttm: 0.0569
-                        },
-                    },
-                    get_sector_peers: {
-                        sub_sector: 'Banks',
-                        valuation: {
-                            historical_valuation: {
-                                2024: {
-                                    pe: 16.19
-                                },
-                                2026: {
-                                    pe: 10.26
-                                },
-                            },
-                        },
-                    },
-                    widget_type: 'peers_comparison',
-                    metrics: {
-                        symbol: 'BBCA.JK',
-                        company_name: 'PT Bank Central Asia Tbk.',
-                        market_cap: 817683406650000
-                    },
-                },
-
                 init() {
-                    if (new URLSearchParams(window.location.search).has('demo')) {
-                        this.demoMode = true;
-                        this.sessionTitle = 'Demo Research Session';
-                        this.inspectorSteps = [...this.demoSteps];
-                        this.latestPayload = this.demoPayload;
-                        this.currentStepTime = '00:42';
-
-                        return;
+                    if (this.messages.length > 0) {
+                        this.restoreHistoryState();
+                        this.scrollToBottom();
+                    } else if (this.activeSessionId) {
+                        this.loadSession(this.activeSessionId);
                     }
 
-                    if (this.activeSessionId) {
-                        this.loadSession(this.activeSessionId);
+                    if (this.userPrompt.trim() && this.activeSessionId && this.messages.length === 0) {
+                        this.submitPrompt();
                     }
 
                     window.addEventListener('inspector-update', (e) => {
@@ -451,8 +335,7 @@
                 get sessionListOrdered() {
                     return [...this.sessionList].sort((a, b) => {
                         if (a.is_pinned !== b.is_pinned) return a.is_pinned ? -1 : 1;
-                        return String(b.updated_at ?? '').localeCompare(String(a
-                            .updated_at ?? ''));
+                        return String(b.updated_at ?? '').localeCompare(String(a.updated_at ?? ''));
                     });
                 },
 
@@ -463,20 +346,17 @@
                         ratios[ratios.length - 1]?.profitability?.roe ?? null :
                         null;
 
-                    return fromHistory ?? overview?.financials?.roe ?? overview?.roe_ttm ?? overview
-                        ?.roe ?? null;
+                    return fromHistory ?? overview?.financials?.roe ?? overview?.roe_ttm ?? overview?.roe ?? null;
                 },
 
                 get latestDivYield() {
                     const overview = this.latestPayload?.get_company_overview;
 
-                    return overview?.dividend?.yield_ttm ?? overview?.valuation?.dividend_yield ??
-                        overview?.dividend_yield ?? null;
+                    return overview?.dividend?.yield_ttm ?? overview?.valuation?.dividend_yield ?? overview?.dividend_yield ?? null;
                 },
 
                 get forwardPeVsMedian() {
-                    const pe = parseFloat(this.latestPayload?.get_company_overview?.valuation
-                        ?.forward_pe);
+                    const pe = parseFloat(this.latestPayload?.get_company_overview?.valuation?.forward_pe);
                     const median = parseFloat(this.subsectorMedianPe);
                     if (!isNaN(pe) && !isNaN(median) && median > 0) {
                         return pe < median ? 'undervalued' : 'overvalued';
@@ -488,8 +368,7 @@
                     if (this._subsectorMedianPe !== null && this._subsectorMedianPe !== undefined) {
                         return this._subsectorMedianPe;
                     }
-                    const history = this.latestPayload?.get_sector_peers?.valuation
-                        ?.historical_valuation;
+                    const history = this.latestPayload?.get_sector_peers?.valuation?.historical_valuation;
                     const years = history ? Object.keys(history) : [];
 
                     return years.length ? history[years[years.length - 1]].pe : null;
@@ -515,8 +394,7 @@
 
                 renderMarkdown(content) {
                     if (!content) return '';
-                    return typeof marked !== 'undefined' ? marked.parse(content) : content.replace(
-                        /\n/g, '<br>');
+                    return typeof marked !== 'undefined' ? marked.parse(content) : content.replace(/\n/g, '<br>');
                 },
 
                 scrollToBottom() {
@@ -554,16 +432,14 @@
                                 id: result.session.id,
                                 title: result.session.title,
                                 is_pinned: !!result.session.is_pinned,
-                                updated_at: result.session.updated_at ?? new Date()
-                                .toISOString(),
+                                updated_at: result.session.updated_at ?? new Date().toISOString(),
                             };
                             this.sessionList.unshift(created);
                             this.activeSessionId = created.id;
                             this.sessionTitle = created.title;
                             this.messages = [];
                             this.inspectorSteps = [];
-                            this.livePayload = null;
-                            this.demoMode = false;
+                            this.latestPayload = null;
                             this.userPrompt = '';
 
                             const url = new URL(window.location.href);
@@ -578,24 +454,22 @@
                 async switchSession(sessionId) {
                     if (this.activeSessionId === sessionId) return;
                     this.activeSessionId = sessionId;
-                    this.demoMode = false;
                     await this.loadSession(sessionId);
-                    window.history.pushState({}, '',
-                        `{{ route('agent.workspace') }}?session_id=${sessionId}`);
+                    window.history.pushState({}, '', `{{ route('agent.workspace') }}?session_id=${sessionId}`);
                 },
 
                 async loadSession(sessionId) {
                     try {
                         const res = await fetch(`/agent/sessions/${sessionId}`, {
                             headers: {
-                                'Accept': 'application/json'
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': this.csrfToken
                             }
                         });
                         const result = await res.json();
                         if (result.success) {
                             this.sessionTitle = result.session.title;
                             this.messages = result.session.messages || [];
-                            this.demoMode = false;
 
                             this.restoreHistoryState();
                             this.scrollToBottom();
@@ -734,9 +608,8 @@
                                     this.sessionTitle = '';
                                     this.messages = [];
                                     this.inspectorSteps = [];
-                                    this.livePayload = null;
-                                    window.history.replaceState({}, '',
-                                        "{{ route('agent.workspace') }}");
+                                    this.latestPayload = null;
+                                    window.history.replaceState({}, '', "{{ route('agent.workspace') }}");
                                 }
                             }
                         }
@@ -748,14 +621,12 @@
                 },
 
                 quickDrillDown(symbol) {
-                    this.userPrompt =
-                        `Please run an in-depth fundamental analysis for ${symbol}`;
+                    this.userPrompt = `Please run an in-depth fundamental analysis for ${symbol}`;
                     this.submitPrompt();
                 },
 
                 async streamPrompt(prompt, botMessageId) {
-                    const url =
-                        `/api/v1/agent/chat/stream?chat_session_id=${this.activeSessionId}&prompt=${encodeURIComponent(prompt)}`;
+                    const url = `/api/v1/agent/chat/stream?chat_session_id=${this.activeSessionId}&prompt=${encodeURIComponent(prompt)}`;
 
                     let res;
                     try {
@@ -788,17 +659,13 @@
                             } catch {
                                 detail = raw.slice(0, 300);
                             }
-                        } catch {
-                        }
+                        } catch { }
 
                         throw {
-                            title: res.status === 401 ? 'Your session expired' : (res.status ===
-                                422 ? 'The prompt was rejected' :
-                                'The copilot could not start'),
+                            title: res.status === 401 ? 'Your session expired' : (res.status === 422 ? 'The prompt was rejected' : 'The copilot could not start'),
                             message: serverMessage || (res.status === 401 ?
                                 'Please sign in again, then resend your prompt.' :
-                                'The server returned an error before the answer started. Please resend your prompt.'
-                                ),
+                                'The server returned an error before the answer started. Please resend your prompt.'),
                             detail: detail || `HTTP ${res.status}`,
                         };
                     }
@@ -840,8 +707,7 @@
                                 break;
 
                             case 'token':
-                                this.appendToMessage(botMessageId, data.text ?? data.token ??
-                                    '');
+                                this.appendToMessage(botMessageId, data.text ?? data.token ?? '');
                                 break;
 
                             case 'done':
@@ -855,8 +721,7 @@
                             case 'error':
                                 serverError = {
                                     title: 'The AI model failed to respond',
-                                    message: data.message ||
-                                        'The model did not return an answer. Please send your prompt again.',
+                                    message: data.message || 'The model did not return an answer. Please send your prompt again.',
                                     detail: data.detail || data.exception || '',
                                 };
                                 break;
@@ -865,15 +730,10 @@
 
                     try {
                         while (true) {
-                            const {
-                                done,
-                                value
-                            } = await reader.read();
+                            const { done, value } = await reader.read();
                             if (done) break;
 
-                            buffer += decoder.decode(value, {
-                                stream: true
-                            });
+                            buffer += decoder.decode(value, { stream: true });
 
                             let sep;
                             while ((sep = buffer.search(/\r?\n\r?\n/)) !== -1) {
@@ -941,7 +801,6 @@
                         return;
                     }
 
-                    this.demoMode = false;
                     this.userPrompt = '';
                     this.isResearching = true;
                     this.inspectorSteps = [];
@@ -976,8 +835,7 @@
 
                 handlePromptFailure(err, botMessageId, prompt) {
                     const title = err?.title || 'The copilot could not finish this request';
-                    const message = err?.message ||
-                        'Something went wrong while the model was answering. Please send your prompt again.';
+                    const message = err?.message || 'Something went wrong while the model was answering. Please send your prompt again.';
                     const detail = err?.detail || '';
 
                     console.error('Prompt failed:', {

@@ -1,31 +1,11 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Modules\Admin\Http\Controllers\AdminPageController;
 use Modules\Admin\Http\Controllers\MarketInsightCmsController;
+use Modules\Admin\Http\Controllers\PromptStarterController;
+use Modules\Admin\Http\Controllers\RoleController;
+use Modules\Admin\Http\Controllers\SystemCacheController;
 use Modules\Admin\Http\Controllers\UserManagementController;
-
-/*
-|--------------------------------------------------------------------------
-| Admin Panel — page routes
-|--------------------------------------------------------------------------
-| View-rendering routes only. Every dataset is DUMMY at the controller level
-| (marked with TODO comments) — the backend developer will wire real models,
-| mutations and policies later.
-|
-| Every route is guarded by the Spatie permission that owns that page, so the
-| sidebar/URL access can never drift from the seeded permission matrix:
-|   users            -> admin.users.view
-|   market insights  -> admin.insights.manage
-|   prompt starters  -> admin.prompts.manage
-|   cache            -> admin.system.cache-manage
-|   roles & access   -> admin.roles.view  (super-admin only)
-|
-| Note: the `verified` middleware is intentionally omitted — email
-| verification is disabled in config/fortify.php (Features::emailVerification
-| commented out), so no verification.notice route exists and any user with a
-| NULL email_verified_at could never pass it.
-*/
 
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
     Route::middleware('can:admin.users.view')->group(function () {
@@ -47,16 +27,26 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     });
 
     Route::middleware('can:admin.prompts.manage')->group(function () {
-        Route::get('/prompt-starters', [AdminPageController::class, 'promptStarters'])->name('prompts.index');
+        Route::get('/prompt-starters', [PromptStarterController::class, 'index'])->name('prompts.index');
+        Route::post('/prompt-starters', [PromptStarterController::class, 'store'])->name('prompts.store');
+        Route::put('/prompt-starters/{id}', [PromptStarterController::class, 'update'])->name('prompts.update');
+        Route::delete('/prompt-starters/{id}', [PromptStarterController::class, 'destroy'])->name('prompts.destroy');
     });
 
     Route::middleware('can:admin.system.cache-manage')->group(function () {
-        Route::get('/caches', [AdminPageController::class, 'caches'])->name('caches.index');
+        Route::get('/caches', [SystemCacheController::class, 'index'])->name('caches.index');
+        Route::delete('/caches/{id}/flush', [SystemCacheController::class, 'flushKey'])->name('caches.flush-key');
     });
 
     Route::middleware('can:admin.roles.view')->group(function () {
-        Route::get('/roles', [AdminPageController::class, 'roles'])->name('roles.index');
-        Route::get('/roles/{id}/edit', [AdminPageController::class, 'roleEdit'])->name('roles.edit');
-        Route::get('/roles/create', [AdminPageController::class, 'roleCreate'])->name('roles.create');
+        Route::get('/roles', [RoleController::class, 'index'])->name('roles.index');
+        Route::get('/roles/create', [RoleController::class, 'create'])->name('roles.create');
+        Route::get('/roles/{id}/edit', [RoleController::class, 'edit'])->name('roles.edit');
+    });
+
+    Route::middleware('can:admin.roles.manage')->group(function () {
+        Route::post('/roles', [RoleController::class, 'store'])->name('roles.store');
+        Route::put('/roles/{id}', [RoleController::class, 'update'])->name('roles.update');
+        Route::delete('/roles/{id}', [RoleController::class, 'destroy'])->name('roles.destroy');
     });
 });

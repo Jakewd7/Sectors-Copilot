@@ -98,11 +98,12 @@
                     </button>
                 </div>
 
-                <form method="POST" :action="formAction" class="space-y-4">
+                <form method="POST" :action="formAction" class="space-y-4" @submit="syncContent()">
                     @csrf
                     <template x-if="editingId">
                         <input type="hidden" name="_method" value="PUT">
                     </template>
+
                     <input type="hidden" name="action_type" :value="form.action_type">
 
                     <div>
@@ -141,7 +142,7 @@
                             class="py-2.5 px-5 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-layer-line bg-layer text-foreground hover:bg-layer-hover focus:outline-hidden transition">
                             Save draft
                         </button>
-                        <button type="submit" @click="form.action_type = 'publish'; syncContent()"
+                        <button type="submit" @click="form.action_type = 'publish'"
                             class="py-2.5 px-5 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg bg-primary border border-primary-line text-primary-foreground hover:bg-primary-hover focus:outline-hidden focus:bg-primary-focus transition">
                             Publish now
                         </button>
@@ -175,7 +176,7 @@
                     editor: null,
 
                     mountEditor() {
-                        if (this.editor || !window.createArticleEditor) return;
+                        if (this.editor || !window.createArticleEditor || !this.$refs.editorHost) return;
 
                         this.editor = window.createArticleEditor(this.$refs.editorHost, '');
 
@@ -186,7 +187,12 @@
 
                     openCreate() {
                         this.editingId = null;
-                        this.form = { title: '', category: 'Weekly review', content: '', action_type: 'publish' };
+                        this.form = {
+                            title: '',
+                            category: 'Weekly review',
+                            content: '',
+                            action_type: 'publish'
+                        };
                         this.open = true;
 
                         this.mountEditor();
@@ -208,7 +214,9 @@
                     },
 
                     syncContent() {
-                        if (this.editor) this.form.content = this.editor.getHtml();
+                        if (this.editor) {
+                            this.form.content = this.editor.getHtml();
+                        }
                     },
                 }));
             });

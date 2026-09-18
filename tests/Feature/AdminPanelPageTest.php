@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Role;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -63,8 +64,8 @@ class AdminPanelPageTest extends TestCase
         $response = $this->actingAs($this->adminUser())->get('/admin/caches');
 
         $response->assertOk();
-        $response->assertSee('Remaining API credits');
-        $response->assertSee('Flush');
+        $response->assertSee('Sectors API Credits');
+        $response->assertSee('Cache per company / sector');
     }
 
     public function test_admin_pages_require_authentication(): void
@@ -96,14 +97,14 @@ class AdminPanelPageTest extends TestCase
 
         $this->actingAs($superAdmin)->get('/admin/roles')
             ->assertOk()
-
             ->assertSee('Role & Access Control', escape: false)
             ->assertSee('super-admin')
             ->assertSee('permissions');
 
-        $this->actingAs($superAdmin)->get('/admin/roles/1/edit')
-            ->assertOk()
+        $editUrl = '/admin/roles/'.Role::where('name', 'super-admin')->firstOrFail()->id.'/edit';
 
+        $this->actingAs($superAdmin)->get($editUrl)
+            ->assertOk()
             ->assertSee('Edit Role & Access')
             ->assertSee('Permission configuration');
     }
