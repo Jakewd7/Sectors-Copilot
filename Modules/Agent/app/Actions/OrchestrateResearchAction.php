@@ -59,7 +59,7 @@ class OrchestrateResearchAction
             ->take(6)
             ->get()
             ->reverse()
-            ->map(fn ($msg) => Content::parse(
+            ->map(fn($msg) => Content::parse(
                 part: $msg->content ?? '',
                 role: $msg->role === 'assistant' ? Role::MODEL : Role::USER
             ))
@@ -69,8 +69,8 @@ class OrchestrateResearchAction
         $tools = $this->geminiService->getRegisteredTools();
         $toolDeclarations = $this->geminiService->getToolDeclarations();
 
-        $systemInstructionText = 'Anda adalah AI Research Copilot pasar modal Indonesia (IDX) yang presisi, objektif, dan faktual. '.
-            'Gunakan tools yang tersedia untuk mengambil data bursa terkini sebelum menjawab pertanyaan emiten. '.
+        $systemInstructionText = 'Anda adalah AI Research Copilot pasar modal Indonesia (IDX) yang presisi, objektif, dan faktual. ' .
+            'Gunakan tools yang tersedia untuk mengambil data bursa terkini sebelum menjawab pertanyaan emiten. ' .
             'Sajikan narasi fundamental yang tajam dan gunakan data aktual dari tools.';
 
         $chat = $this->geminiService->getClient()
@@ -96,7 +96,7 @@ class OrchestrateResearchAction
             $toolName = $functionCall->name;
             $toolArgs = (array) $functionCall->args;
 
-            if (! isset($tools[$toolName])) {
+            if (!isset($tools[$toolName])) {
                 break;
             }
 
@@ -145,14 +145,27 @@ class OrchestrateResearchAction
             'message' => 'Melakukan sintesis narasi dan menyusun matriks analisis...',
         ]);
 
-        $finalText = $response->text();
+        $finalText = collect($response->parts())
+            ->filter(fn($part) => !empty($part->text))
+            ->map(fn($part) => $part->text)
+            ->implode("\n");
+
+        if (empty($finalText)) {
+            $candidate = $response->candidates[0] ?? null;
+            if ($candidate && isset($candidate->content->parts)) {
+                $finalText = collect($candidate->content->parts)
+                    ->filter(fn($part) => !empty($part->text))
+                    ->map(fn($part) => $part->text)
+                    ->implode("\n");
+            }
+        }
         $finalContentWithDisclaimer = $this->disclaimerAction->execute($finalText);
 
         $sseCallback('token', [
             'text' => $finalContentWithDisclaimer,
         ]);
 
-        $structuredPayload = ! empty($collectedPayloads) ? [
+        $structuredPayload = !empty($collectedPayloads) ? [
             'widget_type' => $this->detectWidgetType($collectedPayloads),
             'metrics' => $this->formatMetrics($collectedPayloads),
             'raw' => $collectedPayloads,
@@ -231,7 +244,7 @@ class OrchestrateResearchAction
             $metrics['last_price'] = $overview['price'] ?? $overview['last_price'] ?? null;
         }
 
-        return array_filter($metrics, fn ($value) => ! is_null($value));
+        return array_filter($metrics, fn($value) => !is_null($value));
     }
 
     protected function logStep(
