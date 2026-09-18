@@ -12,6 +12,7 @@
             'label' => 'Research',
             'items' => [
                 ['route' => 'agent.workspace', 'label' => 'Agent Workspace', 'icon' => 'sparkles', 'can' => 'agent.chat.view'],
+                ['route' => 'insights.index', 'label' => 'Market Insights', 'icon' => 'news', 'can' => 'market-insights.view', 'match' => 'insights.show'],
             ],
         ],
         [
@@ -37,7 +38,13 @@
     $activeRoute = null;
     foreach ($sections as $section) {
         foreach ($section['items'] as $item) {
-            if ($currentRoute === $item['route'] || str_starts_with($currentRoute, $item['route'] . '.')) {
+            $match = $item['match'] ?? null;
+
+            $isActive = $currentRoute === $item['route']
+                || str_starts_with($currentRoute, $item['route'] . '.')
+                || ($match !== null && ($currentRoute === $match || str_starts_with($currentRoute, $match . '.')));
+
+            if ($isActive) {
                 if ($activeRoute === null || strlen($item['route']) > strlen($activeRoute)) {
                     $activeRoute = $item['route'];
                 }

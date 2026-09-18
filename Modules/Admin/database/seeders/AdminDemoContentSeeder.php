@@ -12,9 +12,10 @@ class AdminDemoContentSeeder extends Seeder
 {
     public function run(): void
     {
-        $author = User::whereIn('email', ['rina@mail.com', 'dimas@mail.com'])
-            ->orderByRaw('case when email = ? then 0 else 1 end', ['rina@mail.com'])
-            ->first() ?? User::query()->oldest()->first();
+        $author = User::where('email', 'analyst_odm@gmail.com')
+            ->orWhere('name', 'AnalystWannaBe')
+            ->first() ?? User::whereHas('roles', fn ($q) => $q->where('name', 'analyst'))->first()
+            ?? User::query()->oldest()->first();
 
         if (! $author) {
             $this->command?->warn('AdminDemoContentSeeder skipped: no users exist yet.');
@@ -27,19 +28,19 @@ class AdminDemoContentSeeder extends Seeder
                 [
                     'title' => 'Bank Q3 profits beat expectations',
                     'category' => 'Weekly review',
-                    'content' => "# Bank Q3 profits beat expectations\n\nThe four largest banks on the IDX closed the quarter **above consensus**, driven by resilient net interest margins and lower provisioning costs.\n\n## Highlights\n- BBCA: NIM steady at 5.6%, cost of credit down 12 bps\n- BBRI: micro-segment lending growth outpaced the sector\n- BMRI: fee income up 18% QoQ on higher capital-market activity",
+                    'content' => '<p>The four largest banks on the IDX closed the quarter <strong>above consensus</strong>, driven by resilient net interest margins and lower provisioning costs.</p><h2>Highlights</h2><ul><li>BBCA: NIM steady at 5.6%, cost of credit down 12 bps</li><li>BBRI: micro-segment lending growth outpaced the sector</li><li>BMRI: fee income up 18% QoQ on higher capital-market activity</li></ul>',
                     'published_at' => now()->subDays(2),
                 ],
                 [
                     'title' => 'Energy sector slips as commodity prices decline',
                     'category' => 'Stock watch',
-                    'content' => "# Energy sector slips as commodity prices decline\n\nCoal and crude-linked names weakened this week as spot prices cooled. Watch for consolidation among mid-cap producers with elevated leverage.\n\n## What to watch\n- Spot thermal coal benchmarks\n- Refining margins across ASEAN peers",
+                    'content' => '<p>Coal and crude-linked names weakened this week as spot prices cooled. Watch for consolidation among mid-cap producers with elevated leverage.</p><h2>What to watch</h2><ul><li>Spot thermal coal benchmarks</li><li>Refining margins across ASEAN peers</li></ul>',
                     'published_at' => now()->subDay(),
                 ],
                 [
                     'title' => 'IHSG closes stronger, consumer stocks in demand',
                     'category' => 'Weekly review',
-                    'content' => "# IHSG closes stronger, consumer stocks in demand\n\nThe composite index gained on foreign inflows, with consumer names leading the advance as analysts flag defensive rotation into staples.",
+                    'content' => '<p>The composite index gained on foreign inflows, with consumer names leading the advance as analysts flag defensive rotation into staples.</p>',
                     'published_at' => null,
                 ],
             ];
