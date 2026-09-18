@@ -1,5 +1,4 @@
 @php
-    /** @var string $status */
     $status = $status ?? 'active';
 @endphp
 

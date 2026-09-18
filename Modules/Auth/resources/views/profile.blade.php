@@ -1,14 +1,13 @@
 <x-app-shell title="Profile">
     <div class="max-w-4xl mx-auto px-6 py-8 space-y-6">
 
-        <!-- Page heading -->
         <div>
             <h1 class="text-2xl font-bold text-foreground tracking-tight">Profile & Preferences</h1>
             <p class="text-sm text-muted-foreground-1 mt-1">Manage your account details and workspace theme preference.</p>
         </div>
 
         @if (session('status'))
-            {{-- Preline alert (success) --}}
+
             <div class="flex items-center gap-x-3 rounded-lg border border-primary/30 bg-primary/10 px-4 py-3 text-sm text-primary-active"
                  role="alert">
                 <svg class="size-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -19,7 +18,7 @@
         @endif
 
         @if ($errors->any())
-            {{-- Preline alert (danger) --}}
+
             <div class="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger" role="alert">
                 <p class="font-medium mb-1">Please fix the following:</p>
                 <ul class="list-disc list-inside space-y-0.5">
@@ -34,7 +33,6 @@
             @csrf
             @method('PUT')
 
-            <!-- Card: Account details -->
             <div class="bg-layer border border-layer-line rounded-xl p-6 space-y-4">
                 <h2 class="text-sm font-semibold text-foreground">Account details</h2>
 
@@ -62,7 +60,6 @@
                 </div>
             </div>
 
-            <!-- Card: Change password -->
             <div class="bg-layer border border-layer-line rounded-xl p-6 space-y-4">
                 <div>
                     <h2 class="text-sm font-semibold text-foreground">Change password</h2>
@@ -90,7 +87,6 @@
             </div>
         </form>
 
-        <!-- Card: Workspace data (read-only summary) -->
         <div class="bg-layer border border-layer-line rounded-xl p-6">
             <h2 class="text-sm font-semibold text-foreground mb-4">Workspace data</h2>
 

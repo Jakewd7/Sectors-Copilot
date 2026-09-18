@@ -26,7 +26,7 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 
-# AI assistant local configs & notes (not part of the app)
+# AI assistant skills & tooling (local to each machine, not part of the app)
 IDEA.md
 boost.json
 .agents/

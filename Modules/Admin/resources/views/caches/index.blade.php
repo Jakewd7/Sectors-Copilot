@@ -1,21 +1,5 @@
 <x-admin::layouts.master>
-    @php
-        $current = 'caches';
-    @endphp
-
-    <x-slot:navigation>
-        <x-admin::partials.tab-link :href="route('admin.users.index')"
-            :active="$current === 'users'">Users</x-admin::partials.tab-link>
-        <x-admin::partials.tab-link :href="route('admin.insights.index')" :active="$current === 'insights'">Market
-            Article</x-admin::partials.tab-link>
-        <x-admin::partials.tab-link :href="route('admin.prompts.index')" :active="$current === 'prompts'">Prompt
-            starter</x-admin::partials.tab-link>
-        <x-admin::partials.tab-link :href="route('admin.caches.index')"
-            :active="$current === 'caches'">Cache</x-admin::partials.tab-link>
-        <x-admin::partials.tab-link :href="route('admin.roles.index')" :active="$current === 'roles'">Roles &
-            Access</x-admin::partials.tab-link>
-    </x-slot:navigation>
-
+    <!-- Dummy data comes from AdminPageController (TODO: connect to backend) -->
     <div class="space-y-8">
         @if (session('success'))
             <div
@@ -65,7 +49,8 @@
                             @forelse ($entries as $entry)
                                 <tr class="hover:bg-layer-hover/60 transition">
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground font-mono">
-                                        {{ $entry['key'] }}</td>
+                                        {{ $entry['key'] }}
+                                    </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground-1">
                                         <span class="{{ $entry['is_expired'] ? 'text-red-500 font-medium' : '' }}">
                                             {{ $entry['expires_at'] }}

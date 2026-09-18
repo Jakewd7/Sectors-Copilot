@@ -8,16 +8,16 @@
         <template x-for="(step, index) in inspectorSteps" :key="index">
             <div class="flex items-start gap-2.5 text-xs">
                 <div class="mt-0.5 shrink-0">
-                    <!-- running: spinner -->
+
                     <svg x-show="step.status === 'running'" class="w-3.5 h-3.5 text-accent animate-spin" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
                     </svg>
-                    <!-- success: check -->
+
                     <svg x-show="step.status === 'success'" class="w-3.5 h-3.5 text-accent" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path>
                     </svg>
-                    <!-- failed: x -->
+
                     <svg x-show="step.status === 'failed'" class="w-3.5 h-3.5 text-danger" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
@@ -32,7 +32,6 @@
             </div>
         </template>
 
-        <!-- Pending synthesis placeholder (matches the reference layout) -->
         <div x-show="isResearching" class="flex items-start gap-2.5 text-xs">
             <div class="mt-0.5 w-3.5 h-3.5 rounded-full border border-border shrink-0"></div>
             <span class="text-text-muted">Synthesis</span>

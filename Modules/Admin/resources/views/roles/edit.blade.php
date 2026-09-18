@@ -10,14 +10,6 @@
         $formAction = $roleId ? route('admin.roles.update', $roleId) : route('admin.roles.store');
     @endphp
 
-    <x-slot:navigation>
-        <x-admin::partials.tab-link :href="route('admin.users.index')" :active="$current === 'users'">Users</x-admin::partials.tab-link>
-        <x-admin::partials.tab-link :href="route('admin.insights.index')" :active="$current === 'insights'">Market Article</x-admin::partials.tab-link>
-        <x-admin::partials.tab-link :href="route('admin.prompts.index')" :active="$current === 'prompts'">Prompt starter</x-admin::partials.tab-link>
-        <x-admin::partials.tab-link :href="route('admin.caches.index')" :active="$current === 'caches'">Cache</x-admin::partials.tab-link>
-        <x-admin::partials.tab-link :href="route('admin.roles.index')" :active="$current === 'roles'">Roles & Access</x-admin::partials.tab-link>
-    </x-slot:navigation>
-
     <form method="POST" action="{{ $formAction }}" class="space-y-6"
           x-data="roleEditor(@js($roleName), @js($checked), @js($allPermissionNames), @js($isSuperAdmin))">
         @csrf

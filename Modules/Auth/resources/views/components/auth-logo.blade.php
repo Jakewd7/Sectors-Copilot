@@ -1,5 +1,4 @@
 @php
-    /** @var string $class */
     $class = $class ?? 'mx-auto mb-8';
 @endphp
 

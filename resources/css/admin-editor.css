@@ -1,29 +1,3 @@
-/* ============================================================================
-   Quill WYSIWYG — re-skin onto the app theme.
-
-   WHY THIS FILE EXISTS (and is not in preline-bridge.css)
-   ------------------------------------------------------
-   Quill ships hardcoded colours (blue #06c accents, white dropdown panels,
-   near-white labels, black placeholder). Reskinning it therefore means beating
-   Quill's own rules, and most of them have the SAME specificity as the
-   override — so the winner is decided purely by stylesheet ORDER.
-
-   preline-bridge.css is bundled into app.css, which the layouts load BEFORE the
-   page-specific editor bundle. Overrides placed there lose every tie:
-
-       .ql-picker-options{background-color:#fff}        -> stayed white in dark
-       .ql-picker.ql-expanded .ql-picker-label{color:#ccc} -> near-white label
-       .ql-editor.ql-blank::before{color:rgba(0,0,0,.6)} -> unreadable placeholder
-
-   Loading this file from admin-editor.js immediately AFTER quill.snow.css puts
-   the overrides later in the cascade, so ties resolve in our favour without
-   !important. Keep the import order in admin-editor.js intact.
-
-   Colours come from the app tokens (--theme-*), which app.css defines on
-   html.dark / html.light and which resolve globally at use time.
-   ========================================================================= */
-
-/* --- Chrome: toolbar + editor surface ------------------------------------- */
 .ql-toolbar.ql-snow {
     border-color: var(--theme-field-border);
     background-color: var(--theme-field);
@@ -46,26 +20,17 @@
     line-height: 1.6;
 }
 
-/* --- Placeholder -----------------------------------------------------------
-   Quill: rgba(0,0,0,.6) — black at 60% on a dark field is near-invisible.
-   --theme-text-muted clears ~4:1 on --theme-field in dark mode; the shared
-   --theme-placeholder token is deliberately dimmer (it is tuned for the small
-   one-line inputs) and measured ~1.9:1 here, which is what the user reported. */
 .ql-container.ql-snow .ql-editor.ql-blank::before {
     color: var(--theme-text-muted);
     font-style: normal;
     opacity: 1;
 }
 
-/* --- Toolbar icons: SVG stroke/fill use currentColor ---------------------- */
 .ql-snow .ql-stroke,
 .ql-snow .ql-stroke-miter { stroke: var(--theme-text-muted); }
 .ql-snow .ql-fill,
 .ql-snow .ql-stroke.ql-fill { fill: var(--theme-text-muted); }
 
-/* --- Header picker label ("Normal") ---------------------------------------
-   Quill: #444 idle, #ccc when expanded — #444 is invisible on a dark toolbar
-   and #ccc is inconsistent with the rest of the chrome. */
 .ql-snow .ql-picker { color: var(--theme-text-primary); }
 .ql-snow .ql-picker.ql-expanded .ql-picker-label {
     color: var(--theme-text-primary);
@@ -73,14 +38,6 @@
 .ql-snow .ql-picker.ql-expanded .ql-picker-label .ql-stroke { stroke: var(--theme-text-primary); }
 .ql-snow .ql-picker.ql-expanded .ql-picker-label .ql-fill { fill: var(--theme-text-primary); }
 
-/* --- Header picker dropdown panel -----------------------------------------
-   Quill hardcodes background #fff with no border, which reads as a light-mode
-   artefact floating over the dark modal.
-
-   NOTE the selector must carry `.ql-toolbar.ql-snow` as an ancestor: Quill's own
-   `.ql-toolbar.ql-snow .ql-picker.ql-expanded .ql-picker-options{border-color:#ccc}`
-   is (0,4,0) and outranks a shorter selector, leaving a grey border on a dark
-   panel. Matching that shape keeps the tie decided by order (we come later). */
 .ql-toolbar.ql-snow .ql-picker.ql-expanded .ql-picker-options,
 .ql-snow .ql-picker-options {
     background-color: var(--theme-surface);
@@ -90,8 +47,6 @@
     padding: 0.25rem;
 }
 
-/* Same shape as Quill's expanded-label rule, so the label stays readable when
-   the dropdown is open (Quill sets it to #ccc). */
 .ql-toolbar.ql-snow .ql-picker.ql-expanded .ql-picker-label {
     color: var(--theme-text-primary);
     border-color: var(--theme-border);
@@ -103,10 +58,6 @@
     padding-inline: 0.5rem;
 }
 
-/* --- Hover / active: app accent instead of Quill blue #06c ----------------
-   These carry `.ql-toolbar.ql-snow` as an ancestor to match the specificity of
-   Quill's own blue rules — without it, `.ql-picker-item.ql-selected` stays #06c
-   (visible on the selected item in the header dropdown). */
 .ql-toolbar.ql-snow button:hover,
 .ql-toolbar.ql-snow button:focus,
 .ql-toolbar.ql-snow button.ql-active,
@@ -155,7 +106,6 @@
     fill: var(--theme-accent);
 }
 
-/* The dropdown panel is absolutely positioned, so it needs its own hover rule. */
 .ql-snow .ql-picker-options .ql-picker-item:hover,
 .ql-snow .ql-picker-options .ql-picker-item.ql-selected {
     color: var(--theme-accent);
@@ -165,7 +115,6 @@
     background-color: var(--theme-hover);
 }
 
-/* --- Link tooltip ("Visit URL / Edit / Remove") --------------------------- */
 .ql-snow .ql-tooltip {
     background-color: var(--theme-surface);
     border-color: var(--theme-border);
@@ -184,7 +133,6 @@
 
 .ql-snow .ql-tooltip a { color: var(--theme-accent-dim); }
 
-/* --- Content typography inside the editor --------------------------------- */
 .ql-editor h2 { font-size: 1.25rem; font-weight: 600; margin: 0.75rem 0 0.5rem; }
 .ql-editor h3 { font-size: 1.05rem; font-weight: 600; margin: 0.65rem 0 0.4rem; }
 .ql-editor blockquote {

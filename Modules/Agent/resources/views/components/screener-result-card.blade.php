@@ -1,6 +1,4 @@
-<!-- Screening results rendered inside the right-side inspector panel.
-     Preline card + outline-button styling via preline-bridge tokens.
-     Scope: latestPayload (structured_payload of the live/latest research). -->
+
 <div class="space-y-2">
     <template x-for="stock in (latestPayload.screen_stocks || [])" :key="stock.symbol">
         <div class="p-3 bg-card border border-card-line rounded-lg flex items-center justify-between gap-3 hover:bg-layer-hover/60 transition">

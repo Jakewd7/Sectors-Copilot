@@ -9,9 +9,6 @@ export default defineConfig({
             input: [
                 'resources/css/app.css',
                 'resources/js/app.js',
-                // Page-specific: the WYSIWYG article editor. Kept as its own entry so
-                // Quill (~200KB JS) never lands in the shared bundle — only the admin
-                // Market Articles page loads it.
                 'resources/js/admin-editor.js',
             ],
             refresh: true,

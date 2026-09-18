@@ -1,16 +1,10 @@
-@props([
-    'title' => '',
-    'subtitle' => '',
-    'label' => '',
-    'percent' => 0,
-    'percentLabel' => null,
-    'meta' => '',
-    'models' => [],
-])
-
 @php
-    $percent = max(0.0, min(100.0, (float) $percent));
-    $percentLabel = $percentLabel ?? (round($percent, 1) . '% used');
+    $title = $title ?? '';
+    $subtitle = $subtitle ?? '';
+    $percent = max(0.0, min(100.0, (float) ($percent ?? 0)));
+    $percentLabel = $percentLabel ?? round($percent, 1) . '% used';
+    $meta = $meta ?? '';
+    $models = $models ?? [];
 @endphp
 
 <div class="bg-layer border border-layer-line rounded-xl p-5 w-full">
@@ -35,7 +29,7 @@
         <p class="text-xs text-muted-foreground-1 mt-1.5">{{ $meta }}</p>
     @endif
 
-    @if (!empty($models))
+    @if ($models)
         <div class="mt-4">
             <p class="text-xs text-muted-foreground-1 mb-2">Models used today</p>
             <ul class="space-y-1.5">

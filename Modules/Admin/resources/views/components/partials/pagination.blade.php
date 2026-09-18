@@ -1,14 +1,4 @@
 @php
-    /**
-     * Preline pagination partial. Values may arrive as strings from the view,
-     * so normalize defensively instead of relying on caller types.
-     *
-     * @var mixed $page Current page (1-based)
-     * @var mixed $totalPages
-     * @var mixed $from First row number shown
-     * @var mixed $to Last row number shown
-     * @var mixed $total
-     */
     $page = (int) ($page ?? 1);
     $totalPages = max(1, (int) ($totalPages ?? 1));
     $from = (int) ($from ?? 0);
@@ -26,6 +16,7 @@
     </p>
 
     <div class="flex items-center gap-x-1">
+
         <a href="{{ $pageUrl(max(1, $page - 1)) }}"
            class="size-8 inline-flex justify-center items-center rounded-lg border border-layer-line bg-layer text-muted-foreground-1 hover:bg-layer-hover hover:text-foreground focus:outline-hidden transition {{ $page <= 1 ? 'pointer-events-none opacity-50' : '' }}"
            aria-label="Previous page">

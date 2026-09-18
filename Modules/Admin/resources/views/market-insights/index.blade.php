@@ -1,21 +1,4 @@
 <x-admin::layouts.master>
-    @php
-        $current = 'insights';
-    @endphp
-
-    <x-slot:navigation>
-        <x-admin::partials.tab-link :href="route('admin.users.index')"
-            :active="$current === 'users'">Users</x-admin::partials.tab-link>
-        <x-admin::partials.tab-link :href="route('admin.insights.index')" :active="$current === 'insights'">Market
-            Article</x-admin::partials.tab-link>
-        <x-admin::partials.tab-link :href="route('admin.prompts.index')" :active="$current === 'prompts'">Prompt
-            starter</x-admin::partials.tab-link>
-        <x-admin::partials.tab-link :href="route('admin.caches.index')"
-            :active="$current === 'caches'">Cache</x-admin::partials.tab-link>
-        <x-admin::partials.tab-link :href="route('admin.roles.index')" :active="$current === 'roles'">Roles &
-            Access</x-admin::partials.tab-link>
-    </x-slot:navigation>
-
     <div class="space-y-6" x-data="insightEditor()">
         @if (session('success'))
             <div

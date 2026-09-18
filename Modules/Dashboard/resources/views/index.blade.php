@@ -4,19 +4,16 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     @php
-        // 1. Normalisasi Top Gainers & Losers (Format Sectors API: $topMovers['top_gainers']['1d'] atau list langsung)
         $gainersList = $topMovers['top_gainers']['1d'] ?? ($topMovers['top_gainers'] ?? []);
         $losersList = $topMovers['top_losers']['1d'] ?? ($topMovers['top_losers'] ?? []);
 
         $topGainer = $gainersList[0] ?? null;
         $topLoser = $losersList[0] ?? null;
 
-        // 2. Normalisasi Most Traded (Format Sectors API: associative array keyed by date)
         $mostTradedGrouped = $mostTraded ?? [];
         $latestDateTrades = !empty($mostTradedGrouped) ? end($mostTradedGrouped) : [];
         $topTraded = is_array($latestDateTrades) ? ($latestDateTrades[0] ?? null) : null;
 
-        // 3. Normalisasi IHSG Market Cap (Sectors API: 'idx_total_market_cap')
         $summaryData = is_array($summary) && isset($summary[0]) ? end($summary) : ($summary ?? []);
         $marketCapVal = $summaryData['idx_total_market_cap'] ?? ($summaryData['market_cap'] ?? 0);
         $marketCapTrillion = $marketCapVal > 0 ? ($marketCapVal / 1000000000000) : 0;
@@ -25,7 +22,7 @@
         $agentRouteExists = \Illuminate\Support\Facades\Route::has('agent.workspace');
     @endphp
 
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6" x-data="{ 
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6" x-data="{
             lang: 'id',
             t: {
                 en: {
@@ -93,9 +90,6 @@
             }
         }">
 
-            <!-- ============================================================ -->
-            <!-- HEADER & DIRECT ACTION                                       -->
-            <!-- ============================================================ -->
             <div class="bg-surface border border-border rounded-2xl p-6 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <div class="flex items-center gap-2">
@@ -129,7 +123,6 @@
                         </div>
                     </div>
 
-                    <!-- Direct Redirection to Agent Workspace -->
                     <a href="{{ $agentRouteExists ? route('agent.workspace') : '#' }}"
                         class="px-4 py-2 bg-accent text-white rounded-xl text-xs font-semibold hover:bg-accent-dim transition flex items-center gap-2 shadow-sm">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -140,11 +133,8 @@
                 </div>
             </div>
 
-            <!-- ============================================================ -->
-            <!-- SECTION A: Market Highlights & Telemetry                      -->
-            <!-- ============================================================ -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- 1. IHSG Market Cap & Top Movers -->
+
                 <div class="bg-surface border border-border rounded-2xl p-6 shadow-sm flex flex-col justify-between">
                     <div>
                         <div class="flex justify-between items-start mb-4">
@@ -164,7 +154,7 @@
                         </div>
 
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                            <!-- Top Gainer -->
+
                             <div class="bg-background/60 p-3 rounded-xl border border-border/80 flex flex-col justify-between">
                                 <div>
                                     <div class="flex items-center justify-between text-[10px] text-text-muted mb-1">
@@ -174,7 +164,7 @@
                                     <span class="font-bold text-text-primary block">
                                         {{ str_replace('.JK', '', $topGainer['symbol'] ?? ($topGainer['ticker'] ?? 'N/A')) }}
                                     </span>
-                                    @php 
+                                    @php
                                                                             $gainerPct = ((float) ($topGainer['price_change'] ?? ($topGainer['price_change_percentage'] ?? 0))) * 100;
                                         $gainerPrice = $topGainer['last_close_price'] ?? ($topGainer['close_price'] ?? 0);
                                     @endphp
@@ -186,7 +176,6 @@
                                 <div class="h-10 mt-2"><canvas id="chartGainer"></canvas></div>
                             </div>
 
-                            <!-- Top Loser -->
                             <div class="bg-background/60 p-3 rounded-xl border border-border/80 flex flex-col justify-between">
                                 <div>
                                     <div class="flex items-center justify-between text-[10px] text-text-muted mb-1">
@@ -196,7 +185,7 @@
                                     <span class="font-bold text-text-primary block">
                                         {{ str_replace('.JK', '', $topLoser['symbol'] ?? ($topLoser['ticker'] ?? 'N/A')) }}
                                     </span>
-                                    @php 
+                                    @php
                                                                             $loserPct = ((float) ($topLoser['price_change'] ?? ($topLoser['price_change_percentage'] ?? 0))) * 100;
                                         $loserPrice = $topLoser['last_close_price'] ?? ($topLoser['close_price'] ?? 0);
                                     @endphp
@@ -208,7 +197,6 @@
                                 <div class="h-10 mt-2"><canvas id="chartLoser"></canvas></div>
                             </div>
 
-                            <!-- Most Traded -->
                             <div class="bg-background/60 p-3 rounded-xl border border-border/80 flex flex-col justify-between">
                                 <div>
                                     <div class="flex items-center justify-between text-[10px] text-text-muted mb-1">
@@ -228,7 +216,6 @@
                     </div>
                 </div>
 
-                <!-- 2. Credit Shield & Cache Telemetry -->
                 <div class="bg-surface border border-border rounded-2xl p-6 shadow-sm flex flex-col justify-between">
                     <div>
                         <div class="flex justify-between items-start mb-4">
@@ -272,9 +259,6 @@
                 </div>
             </div>
 
-            <!-- ============================================================ -->
-            <!-- SECTION B: Sector Benchmark Grid                             -->
-            <!-- ============================================================ -->
             <div class="bg-surface border border-border rounded-2xl p-6 shadow-sm">
                 <div class="flex justify-between items-center mb-4">
                     <div>
@@ -305,11 +289,8 @@
                 </div>
             </div>
 
-            <!-- ============================================================ -->
-            <!-- SECTION C: Watchlist & Curated Insights                      -->
-            <!-- ============================================================ -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- Watchlist Items -->
+
                 <div class="bg-surface border border-border rounded-2xl p-6 shadow-sm flex flex-col justify-between">
                     <div>
                         <div class="flex justify-between items-center mb-4">
@@ -383,7 +364,6 @@
                     </div>
                 </div>
 
-                <!-- Curated Insights -->
                 <div class="bg-surface border border-border rounded-2xl p-6 shadow-sm flex flex-col justify-between">
                     <div>
                         <div class="flex justify-between items-center mb-4">
@@ -422,7 +402,6 @@
                 </div>
             </div>
 
-            <!-- Floating Quick Action Button (Direct Navigation) -->
             <div class="fixed bottom-6 right-6 z-50">
                 <a href="{{ $agentRouteExists ? route('agent.workspace') : '#' }}"
                     class="w-14 h-14 bg-accent text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-105 transition relative border border-accent/40"
@@ -437,7 +416,6 @@
 
         </div>
 
-        <!-- Script Sparklines -->
         <script>
             document.addEventListener('DOMContentLoaded', function () {
                 const sparklineOptions = {

@@ -1,21 +1,5 @@
 <x-admin::layouts.master>
-    @php
-        $current = 'roles';
-    @endphp
-
-    <x-slot:navigation>
-        <x-admin::partials.tab-link :href="route('admin.users.index')"
-            :active="$current === 'users'">Users</x-admin::partials.tab-link>
-        <x-admin::partials.tab-link :href="route('admin.insights.index')" :active="$current === 'insights'">Market
-            Article</x-admin::partials.tab-link>
-        <x-admin::partials.tab-link :href="route('admin.prompts.index')" :active="$current === 'prompts'">Prompt
-            starter</x-admin::partials.tab-link>
-        <x-admin::partials.tab-link :href="route('admin.caches.index')"
-            :active="$current === 'caches'">Cache</x-admin::partials.tab-link>
-        <x-admin::partials.tab-link :href="route('admin.roles.index')" :active="$current === 'roles'">Roles &
-            Access</x-admin::partials.tab-link>
-    </x-slot:navigation>
-
+    <!-- Dummy data comes from AdminPageController (TODO: connect to backend) -->
     <div class="space-y-6" x-data>
         @if (session('success'))
             <div
@@ -73,9 +57,11 @@
                         @forelse ($roles as $index => $role)
                             <tr class="hover:bg-layer-hover/60 transition">
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground-1">
-                                    {{ ($page - 1) * 5 + $index + 1 }}</td>
+                                    {{ ($page - 1) * 5 + $index + 1 }}
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground">
-                                    {{ $role['name'] }}</td>
+                                    {{ $role['name'] }}
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span
                                         class="inline-flex items-center py-1 px-2.5 rounded-full text-xs font-mono bg-surface-4 text-foreground border border-layer-line">{{ $role['guard'] }}</span>
