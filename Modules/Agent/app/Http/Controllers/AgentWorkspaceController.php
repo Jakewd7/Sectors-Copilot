@@ -18,9 +18,9 @@ class AgentWorkspaceController extends Controller
         $context = $request->query('context');
         $tickers = $request->query('tickers');
 
-        if (! $initialPrompt && $ticker) {
+        if (!$initialPrompt && $ticker) {
             $initialPrompt = "Analisis prospek saham {$ticker} terkini secara teknikal dan fundamental.";
-        } elseif (! $initialPrompt && $context === 'watchlist' && $tickers) {
+        } elseif (!$initialPrompt && $context === 'watchlist' && $tickers) {
             $initialPrompt = "Berikan perbandingan dan rekomendasi rotasi portofolio untuk saham berikut: {$tickers}.";
         }
 
@@ -31,10 +31,10 @@ class AgentWorkspaceController extends Controller
 
         $activeSessionId = $request->query('session_id');
 
-        if ($initialPrompt && ! $activeSessionId) {
+        if ($initialPrompt && !$activeSessionId) {
             $sessionTitle = $ticker
-                ? "Riset {$ticker} - ".now()->format('d M H:i')
-                : 'Analisis Pasar - '.now()->format('d M H:i');
+                ? "Riset {$ticker} - " . now()->format('d M H:i')
+                : 'Analisis Pasar - ' . now()->format('d M H:i');
 
             $activeSession = ChatSession::create([
                 'user_id' => $userId,
@@ -67,7 +67,7 @@ class AgentWorkspaceController extends Controller
 
         $session = ChatSession::create([
             'user_id' => $request->user()->id,
-            'title' => $request->title ?? 'Riset Baru '.now()->format('d/m/Y H:i'),
+            'title' => $request->title ?? 'Riset Baru ' . now()->format('d/m/Y H:i'),
             'is_pinned' => false,
         ]);
 
@@ -93,7 +93,7 @@ class AgentWorkspaceController extends Controller
             ->where('user_id', $request->user()->id)
             ->firstOrFail();
 
-        $session->update(['is_pinned' => ! $session->is_pinned]);
+        $session->update(['is_pinned' => !$session->is_pinned]);
 
         return response()->json([
             'success' => true,
@@ -127,8 +127,6 @@ class AgentWorkspaceController extends Controller
             ->where('user_id', $request->user()->id)
             ->firstOrFail();
 
-        // Messages and their step logs cascade via the schema's foreign keys;
-        // delete explicitly so the behaviour is identical if that ever changes.
         $session->messages()->delete();
         $session->delete();
 

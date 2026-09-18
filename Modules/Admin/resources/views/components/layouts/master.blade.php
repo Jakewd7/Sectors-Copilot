@@ -1,6 +1,3 @@
-{{-- Admin panel layout = global app shell + the tab bar as SUB-NAVIGATION (option B).
-     The sidebar handles global navigation; this top bar stays for fast hops
-     between the five admin sub-pages. --}}
 <x-app-shell>
     <x-slot:navigation>
         {{ $navigation ?? '' }}

@@ -17,7 +17,6 @@
     </x-slot:navigation>
 
     <div class="space-y-6" x-data="{ editUser: null, showCreate: false }">
-        <!-- Flash messages & validation alert -->
         @if (session('success'))
             <div
                 class="p-4 text-sm text-green-700 bg-green-100 dark:bg-green-950 dark:text-green-300 rounded-lg border border-green-200 dark:border-green-800">
@@ -36,14 +35,12 @@
             </div>
         @endif
 
-        <!-- Page heading -->
         <div>
             <h1 class="text-2xl font-bold text-foreground tracking-tight">Users</h1>
             <p class="text-sm text-muted-foreground-1 mt-1">Manage registered accounts, their roles and account status.
             </p>
         </div>
 
-        <!-- Stats row + Create User button -->
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div class="flex flex-wrap gap-4">
                 @foreach ($stats as $stat)
@@ -60,7 +57,6 @@
             </button>
         </div>
 
-        <!-- Users table -->
         <div class="bg-layer border border-layer-line rounded-xl overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-table-line">
@@ -90,7 +86,8 @@
                         @forelse ($users as $user)
                             <tr class="hover:bg-layer-hover/60 transition">
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-foreground">
-                                    {{ $user['name'] }}</td>
+                                    {{ $user['name'] }}
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground-1">{{ $user['email'] }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">{{ $user['role'] }}</td>
@@ -98,7 +95,8 @@
                                     <x-admin::partials.status-badge :status="$user['status']" />
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground-1">
-                                    {{ $user['created_at'] }}</td>
+                                    {{ $user['created_at'] }}
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-end">
                                     <div class="flex items-center justify-end gap-1.5">
                                         <!-- Edit button -->
@@ -130,12 +128,10 @@
                 </table>
             </div>
 
-            <!-- Pagination -->
             <x-admin::partials.pagination :page="$page" :totalPages="$totalPages" :from="$from" :to="$to"
                 :total="$total" />
         </div>
 
-        <!-- FLOATING CREATE OVERLAY -->
         <div x-show="showCreate" x-cloak
             class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm overflow-y-auto"
             @keydown.escape.window="showCreate = false">
@@ -207,7 +203,6 @@
             </div>
         </div>
 
-        <!-- FLOATING EDIT OVERLAY -->
         <div x-show="editUser" x-cloak
             class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm overflow-y-auto"
             @keydown.escape.window="editUser = null">

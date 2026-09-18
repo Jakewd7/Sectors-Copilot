@@ -17,7 +17,6 @@
     </x-slot:navigation>
 
     <div class="space-y-6" x-data="insightEditor()">
-        <!-- Flash messages & validation alert -->
         @if (session('success'))
             <div
                 class="p-4 text-sm text-green-700 bg-green-100 dark:bg-green-950 dark:text-green-300 rounded-lg border border-green-200 dark:border-green-800">
@@ -36,14 +35,12 @@
             </div>
         @endif
 
-        <!-- Page heading -->
         <div>
             <h1 class="text-2xl font-bold text-foreground tracking-tight">Market Articles</h1>
             <p class="text-sm text-muted-foreground-1 mt-1">Publish market insight articles shown to users across the
                 app.</p>
         </div>
 
-        <!-- Stats + Add article button -->
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div class="flex flex-wrap gap-4">
                 @foreach ($stats as $stat)
@@ -60,7 +57,6 @@
             </button>
         </div>
 
-        <!-- Article list -->
         <div class="space-y-3">
             @forelse ($insights as $insight)
                 <div
@@ -99,7 +95,6 @@
             @endforelse
         </div>
 
-        <!-- CREATE / EDIT MODAL -->
         <div x-show="open" x-cloak
             class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm overflow-y-auto"
             @keydown.escape.window="open = false">
@@ -120,11 +115,12 @@
                     </button>
                 </div>
 
-                <form method="POST" :action="formAction" class="space-y-4">
+                <form method="POST" :action="formAction" class="space-y-4" @submit="syncContent()">
                     @csrf
                     <template x-if="editingId">
                         <input type="hidden" name="_method" value="PUT">
                     </template>
+
                     <input type="hidden" name="action_type" :value="form.action_type">
 
                     <div>
@@ -149,6 +145,7 @@
                         <div x-ref="editorHost" class="bg-form-field form-field-border rounded-lg overflow-hidden">
                         </div>
                         <input type="hidden" name="content" x-model="form.content">
+
                         <p class="mt-2 text-xs text-muted-foreground-1">
                             Rich text is saved as HTML.
                         </p>
@@ -159,11 +156,11 @@
                             class="py-2.5 px-4 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-layer-line bg-layer text-muted-foreground-1 hover:bg-layer-hover hover:text-foreground focus:outline-hidden transition">
                             Cancel
                         </button>
-                        <button type="submit" @click="form.action_type = 'draft'; syncContent()"
+                        <button type="submit" @click="form.action_type = 'draft'"
                             class="py-2.5 px-5 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg border border-layer-line bg-layer text-foreground hover:bg-layer-hover focus:outline-hidden transition">
                             Save draft
                         </button>
-                        <button type="submit" @click="form.action_type = 'publish'; syncContent()"
+                        <button type="submit" @click="form.action_type = 'publish'"
                             class="py-2.5 px-5 inline-flex items-center gap-x-2 text-sm font-medium rounded-lg bg-primary border border-primary-line text-primary-foreground hover:bg-primary-hover focus:outline-hidden focus:bg-primary-focus transition">
                             Publish now
                         </button>
@@ -174,6 +171,8 @@
     </div>
 
     @push('scripts')
+        @vite('resources/js/admin-editor.js')
+
         <script>
             document.addEventListener('alpine:init', () => {
                 Alpine.data('insightEditor', () => ({
@@ -194,7 +193,7 @@
                     editor: null,
 
                     mountEditor() {
-                        if (this.editor || !window.createArticleEditor) return;
+                        if (this.editor || !window.createArticleEditor || !this.$refs.editorHost) return;
 
                         this.editor = window.createArticleEditor(this.$refs.editorHost, '');
 
@@ -205,7 +204,12 @@
 
                     openCreate() {
                         this.editingId = null;
-                        this.form = { title: '', category: 'Weekly review', content: '', action_type: 'publish' };
+                        this.form = {
+                            title: '',
+                            category: 'Weekly review',
+                            content: '',
+                            action_type: 'publish'
+                        };
                         this.open = true;
 
                         this.mountEditor();
@@ -227,7 +231,9 @@
                     },
 
                     syncContent() {
-                        if (this.editor) this.form.content = this.editor.getHtml();
+                        if (this.editor) {
+                            this.form.content = this.editor.getHtml();
+                        }
                     },
                 }));
             });

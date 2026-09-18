@@ -11,12 +11,8 @@ use Illuminate\Support\Str;
 
 class MarketInsightCmsController extends Controller
 {
-    /**
-     * Menampilkan daftar market insight, statistik, dan data untuk modal form.
-     */
     public function index(Request $request)
     {
-        // 1. Hitung statistik untuk baris atas (stats row)
         $totalArticles = MarketInsight::count();
         $publishedArticles = MarketInsight::whereNotNull('published_at')
             ->where('published_at', '<=', now())
@@ -31,10 +27,8 @@ class MarketInsightCmsController extends Controller
             ['label' => 'Drafts', 'value' => number_format($draftArticles)],
         ];
 
-        // 2. Ambil data artikel dari database
         $insightsData = MarketInsight::latest('created_at')->get();
 
-        // 3. Mapping data agar sesuai dengan struktur Blade & Alpine object
         $insights = $insightsData->map(function ($item) {
             $isPublished = $item->published_at && $item->published_at <= now();
 
@@ -53,9 +47,6 @@ class MarketInsightCmsController extends Controller
         return view('admin::market-insights.index', compact('stats', 'insights'));
     }
 
-    /**
-     * Menyimpan artikel insight baru (bisa draft atau langsung publish).
-     */
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -87,9 +78,6 @@ class MarketInsightCmsController extends Controller
             ->with('success', 'Market article created successfully.');
     }
 
-    /**
-     * Memperbarui artikel insight yang ada.
-     */
     public function update(Request $request, $id)
     {
         $insight = MarketInsight::findOrFail($id);
@@ -107,7 +95,6 @@ class MarketInsightCmsController extends Controller
             'published_at' => $insight->published_at,
         ];
 
-        // Jika judul berubah, perbarui slug
         if ($insight->title !== $validated['title']) {
             $insight->slug = Str::slug($validated['title']) . '-' . Str::lower(Str::random(6));
         }
@@ -130,9 +117,6 @@ class MarketInsightCmsController extends Controller
             ->with('success', 'Market article updated successfully.');
     }
 
-    /**
-     * Menghapus artikel insight.
-     */
     public function destroy(Request $request, $id)
     {
         $insight = MarketInsight::findOrFail($id);
@@ -149,9 +133,6 @@ class MarketInsightCmsController extends Controller
             ->with('success', 'Market article deleted successfully.');
     }
 
-    /**
-     * Helper untuk mencatat log audit ke tabel admin_audit_logs.
-     */
     protected function recordAudit(Request $request, $action, $targetTable, $targetId, $before = null, $after = null)
     {
         AdminAuditLog::create([
