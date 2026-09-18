@@ -4,18 +4,15 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     @php
-        $gainersList = $topMovers['top_gainers']['1d'] ?? ($topMovers['top_gainers'] ?? []);
-        $losersList = $topMovers['top_losers']['1d'] ?? ($topMovers['top_losers'] ?? []);
+        $gainers = collect($topMovers)->where('change', '>', 0)->sortByDesc('change')->values();
+        $losers = collect($topMovers)->where('change', '<', 0)->sortBy('change')->values();
 
-        $topGainer = $gainersList[0] ?? null;
-        $topLoser = $losersList[0] ?? null;
+        $topGainer = $gainers->first();
+        $topLoser = $losers->first();
 
-        $mostTradedGrouped = $mostTraded ?? [];
-        $latestDateTrades = !empty($mostTradedGrouped) ? end($mostTradedGrouped) : [];
-        $topTraded = is_array($latestDateTrades) ? ($latestDateTrades[0] ?? null) : null;
+        $topTraded = $mostTraded[0] ?? null;
 
-        $summaryData = is_array($summary) && isset($summary[0]) ? end($summary) : ($summary ?? []);
-        $marketCapVal = $summaryData['idx_total_market_cap'] ?? ($summaryData['market_cap'] ?? 0);
+        $marketCapVal = $summary['market_cap'] ?? 0;
         $marketCapTrillion = $marketCapVal > 0 ? ($marketCapVal / 1000000000000) : 0;
 
         $watchlistTickers = collect($watchlist['items'] ?? [])->pluck('ticker')->implode(',');
@@ -162,15 +159,15 @@
                                         <span class="text-emerald-500 font-bold">▲</span>
                                     </div>
                                     <span class="font-bold text-text-primary block">
-                                        {{ str_replace('.JK', '', $topGainer['symbol'] ?? ($topGainer['ticker'] ?? 'N/A')) }}
+                                        {{ str_replace('.JK', '', $topGainer['symbol'] ?? 'N/A') }}
                                     </span>
                                     @php
-                                                                            $gainerPct = ((float) ($topGainer['price_change'] ?? ($topGainer['price_change_percentage'] ?? 0))) * 100;
-                                        $gainerPrice = $topGainer['last_close_price'] ?? ($topGainer['close_price'] ?? 0);
+                                        $gainerPct = (float) ($topGainer['change'] ?? 0);
+                                        $gainerPrice = $topGainer['price'] ?? 0;
                                     @endphp
                                     <span class="text-[11px] text-emerald-500 font-semibold mt-0.5 block">
                                         Rp {{ number_format($gainerPrice, 0, ',', '.') }}
-                                        (+{{ number_format($gainerPct, 1) }}%)
+                                        (+{{ number_format($gainerPct, 2) }}%)
                                     </span>
                                 </div>
                                 <div class="h-10 mt-2"><canvas id="chartGainer"></canvas></div>
@@ -183,16 +180,16 @@
                                         <span class="text-red-500 font-bold">▼</span>
                                     </div>
                                     <span class="font-bold text-text-primary block">
-                                        {{ str_replace('.JK', '', $topLoser['symbol'] ?? ($topLoser['ticker'] ?? 'N/A')) }}
-                                    </span>
-                                    @php
-                                                                            $loserPct = ((float) ($topLoser['price_change'] ?? ($topLoser['price_change_percentage'] ?? 0))) * 100;
-                                        $loserPrice = $topLoser['last_close_price'] ?? ($topLoser['close_price'] ?? 0);
-                                    @endphp
-                                    <span class="text-[11px] text-red-500 font-semibold mt-0.5 block">
-                                        Rp {{ number_format($loserPrice, 0, ',', '.') }}
-                                        ({{ number_format($loserPct, 1) }}%)
-                                    </span>
+    {{ str_replace('.JK', '', $topLoser['symbol'] ?? 'N/A') }}
+</span>
+@php
+    $loserPct = (float) ($topLoser['change'] ?? 0);
+    $loserPrice = $topLoser['price'] ?? 0;
+@endphp
+<span class="text-[11px] text-red-500 font-semibold mt-0.5 block">
+    Rp {{ number_format($loserPrice, 0, ',', '.') }}
+    ({{ number_format($loserPct, 2) }}%)
+</span>
                                 </div>
                                 <div class="h-10 mt-2"><canvas id="chartLoser"></canvas></div>
                             </div>
