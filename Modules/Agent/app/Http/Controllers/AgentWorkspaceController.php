@@ -33,8 +33,8 @@ class AgentWorkspaceController extends Controller
 
         if ($initialPrompt && ! $activeSessionId) {
             $sessionTitle = $ticker
-                ? "Riset {$ticker} - ".now()->format('d M H:i')
-                : 'Analisis Pasar - '.now()->format('d M H:i');
+                ? "Research {$ticker} - " . now()->format('d M H:i')
+                : 'Market Analysis - ' . now()->format('d M H:i');
 
             $activeSession = ChatSession::create([
                 'user_id' => $userId,
@@ -67,7 +67,7 @@ class AgentWorkspaceController extends Controller
 
         $session = ChatSession::create([
             'user_id' => $request->user()->id,
-            'title' => $request->title ?? 'Riset Baru '.now()->format('d/m/Y H:i'),
+            'title' => $request->title ?? 'New Research ' . now()->format('d/m/Y H:i'),
             'is_pinned' => false,
         ]);
 

@@ -372,19 +372,34 @@
 
                         <div class="space-y-3 text-xs">
                             @forelse ($insights as $article)
-                                <div class="p-3.5 bg-background/60 border border-border/80 rounded-xl">
-                                    <div class="flex justify-between items-center">
-                                        <span class="text-[9px] font-bold px-1.5 py-0.5 bg-accent text-white rounded uppercase">
-                                            {{ $article['category'] ?? 'MACRO' }}
-                                        </span>
-                                        <span class="text-[10px] text-text-muted">
-                                            {{ !empty($article['published_at']) ? \Carbon\Carbon::parse($article['published_at'])->diffForHumans() : '' }}
-                                        </span>
+                                @php
+                                    $canRead = auth()->check()
+                                        && \Illuminate\Support\Facades\Route::has('insights.show')
+                                        && auth()->user()->can('market-insights.view');
+                                @endphp
+
+                                @if ($canRead)
+                                    <a href="{{ route('insights.show', $article['slug']) }}"
+                                        class="block p-3.5 bg-background/60 border border-border/80 rounded-xl hover:bg-background transition">
+                                @else
+                                    <div class="p-3.5 bg-background/60 border border-border/80 rounded-xl">
+                                @endif
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-[9px] font-bold px-1.5 py-0.5 bg-accent text-white rounded uppercase">
+                                                {{ $article['category'] ?? 'MACRO' }}
+                                            </span>
+                                            <span class="text-[10px] text-text-muted">
+                                                {{ !empty($article['published_at']) ? \Carbon\Carbon::parse($article['published_at'])->diffForHumans() : '' }}
+                                            </span>
+                                        </div>
+                                        <h3 class="font-bold text-text-primary text-sm mt-1">
+                                            {{ $article['title'] }}
+                                        </h3>
+                                @if ($canRead)
+                                    </a>
+                                @else
                                     </div>
-                                    <h3 class="font-bold text-text-primary text-sm mt-1">
-                                        {{ $article['title'] }}
-                                    </h3>
-                                </div>
+                                @endif
                             @empty
                                 <div class="p-8 text-center text-text-muted bg-background/30 rounded-xl border border-border/60">
                                     <p x-text="t[lang].emptyInsights"></p>
@@ -393,9 +408,18 @@
                         </div>
                     </div>
 
-                    <div class="mt-4 pt-3 border-t border-border flex justify-end items-center text-xs">
-                        <span class="text-text-muted text-[11px]">Editorial CMS &bull; Published</span>
-                    </div>
+                    @if (\Illuminate\Support\Facades\Route::has('insights.index'))
+                        <div class="mt-4 pt-3 border-t border-border flex justify-end items-center text-xs">
+                            <a href="{{ route('insights.index') }}"
+                                class="text-accent hover:underline text-[11px] font-semibold">
+                                <span x-text="t[lang].readFull"></span>
+                            </a>
+                        </div>
+                    @else
+                        <div class="mt-4 pt-3 border-t border-border flex justify-end items-center text-xs">
+                            <span class="text-text-muted text-[11px]">Editorial CMS &bull; Published</span>
+                        </div>
+                    @endif
                 </div>
             </div>
 
