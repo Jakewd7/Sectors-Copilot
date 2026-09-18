@@ -4,6 +4,7 @@ namespace Modules\SectorsData\Services;
 
 use App\Models\ApiCache;
 use Carbon\Carbon;
+use Throwable;
 
 class CachedSectorsService
 {
@@ -18,10 +19,10 @@ class CachedSectorsService
 
     protected function remember(string $endpoint, array $params, int $ttlHours, callable $apiCallback)
     {
-        ksort($params);
-        $cacheKey = hash('sha256', self::PROVIDER.':'.$endpoint.':'.json_encode($params));
+        $normalizedParams = $this->normalizeParams($params);
+        $cacheKey = hash('sha256', self::PROVIDER . ':' . $endpoint . ':' . json_encode($normalizedParams));
 
-        $cached = ApiCache::where('cache_key', $cacheKey)->valid()->first();
+        $cached = ApiCache::where('cache_key', $cacheKey)->first();
 
         if ($cached) {
             $cached->increment('hit_count');
@@ -29,29 +30,29 @@ class CachedSectorsService
             return [
                 'data' => $cached->response_payload,
                 'is_cached' => true,
-                'cached_at' => $cached->created_at,
+                'is_stale' => $cached->expires_at !== null && $cached->expires_at->isPast(),
+                'cached_at' => $cached->updated_at,
             ];
         }
 
-        $payload = $apiCallback();
-
-        ApiCache::updateOrCreate(
-            ['cache_key' => $cacheKey],
-            [
-                'provider' => self::PROVIDER,
-                'endpoint' => $endpoint,
-                'request_params' => $params,
-                'response_payload' => $payload,
-                'hit_count' => 0,
-                'expires_at' => Carbon::now()->addHours($ttlHours),
-            ]
-        );
-
         return [
-            'data' => $payload,
+            'data' => [],
             'is_cached' => false,
-            'cached_at' => now(),
+            'cached_at' => null,
         ];
+    }
+
+    private function normalizeParams(array $params): array
+    {
+        ksort($params);
+
+        foreach ($params as $key => $value) {
+            if (is_array($value)) {
+                $params[$key] = $this->normalizeParams($value);
+            }
+        }
+
+        return $params;
     }
 
     public function getCompanyOverview(string $symbol)
@@ -90,11 +91,11 @@ class CachedSectorsService
     {
         $conditions = [];
 
-        if (! empty($filters['sector'])) {
-            $conditions[] = "sector = '".addslashes($filters['sector'])."'";
+        if (!empty($filters['sector'])) {
+            $conditions[] = "sector = '" . addslashes($filters['sector']) . "'";
         }
-        if (! empty($filters['sub_sector'])) {
-            $conditions[] = "sub_sector = '".addslashes($filters['sub_sector'])."'";
+        if (!empty($filters['sub_sector'])) {
+            $conditions[] = "sub_sector = '" . addslashes($filters['sub_sector']) . "'";
         }
         if (isset($filters['min_roe'])) {
             $conditions[] = "roe_ttm >= {$filters['min_roe']}";

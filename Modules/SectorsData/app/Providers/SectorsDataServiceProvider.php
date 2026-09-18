@@ -2,6 +2,8 @@
 
 namespace Modules\SectorsData\Providers;
 
+use Modules\SectorsData\Console\ClearExpiredSectorsCacheCommand;
+use Modules\SectorsData\Console\WarmSectorsCacheCommand;
 use Nwidart\Modules\Support\ModuleServiceProvider;
 use Illuminate\Console\Scheduling\Schedule;
 
@@ -43,4 +45,14 @@ class SectorsDataServiceProvider extends ModuleServiceProvider
     // {
     //     $schedule->command('inspire')->hourly();
     // }
+
+    public function boot(): void
+    {
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                ClearExpiredSectorsCacheCommand::class,
+                WarmSectorsCacheCommand::class,
+            ]);
+        }
+    }
 }
