@@ -76,7 +76,7 @@ class DashboardAnalyticsService
 
     public function getSectorPerformance(): array
     {
-        $trackedSectors = ['banks', 'food-beverage', 'telecommunication', 'energy', 'basic-materials'];
+        $trackedSectors = ['banks', 'telecommunication', 'food-beverage', 'pharmaceuticals'];
         $sectorCards = [];
 
         foreach ($trackedSectors as $sector) {

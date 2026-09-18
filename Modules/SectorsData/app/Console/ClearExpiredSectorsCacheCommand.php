@@ -12,14 +12,14 @@ class ClearExpiredSectorsCacheCommand extends Command
 
     public function handle()
     {
-        $this->info('Membersihkan cache Sectors API yang kedaluwarsa...');
+        $this->info('Memeriksa cache Sectors API yang kedaluwarsa...');
 
-        $deleted = ApiCache::where('provider', 'sectors_app')
+        $deleted = ApiCache::where('provider', 'sectors_app_v2')
             ->whereNotNull('expires_at')
-            ->where('expires_at', '<=', now())
+            ->where('expires_at', '<=', now()->subDays(7))
             ->delete();
 
-        $this->info("Berhasil membersihkan {$deleted} record cache kedaluwarsa.");
+        $this->info("Berhasil membersihkan {$deleted} record cache usang (> 7 hari).");
 
         return Command::SUCCESS;
     }
