@@ -1,0 +1,23 @@
+{
+    "badge_title": "Asisten Riset Finansial Pasar Modal Indonesia",
+    "hero_title": "Riset Emiten & Valuasi Saham IHSG Lebih Cepat dan Terstruktur",
+    "hero_desc": "Sectors Copilot mengotomasi riset fundamental pasar modal Indonesia. Cukup ketik pertanyaan dalam bahasa sehari-hari untuk membedah kinerja emiten, membandingkan rasio industri, dan menyaring saham potensial secara akurat.",
+    "cta_button": "Mulai menganalisis sekarang",
+    "features_badge": "Kemampuan Aplikasi",
+    "features_title": "Solusi Praktis Analisis Pasar Modal",
+    "feature_1_title": "Chatbot Riset Finansial",
+    "feature_1_desc": "Tanyakan kondisi keuangan perusahaan, tren valuasi, atau ringkasan kinerja terkini langsung dalam bahasa Indonesia maupun Inggris tanpa membaca puluhan halaman laporan keuangan manual.",
+    "feature_1_example": "Contoh: \"Bagaimana pertumbuhan laba dan rasio utang BBCA selama 3 tahun terakhir?\"",
+    "feature_2_title": "Komparasi Rekanan Industri",
+    "feature_2_desc": "Bandingkan beberapa emiten sekaligus secara berdampingan terhadap rata-rata sektornya untuk melihat emiten mana yang valuasinya lebih menarik dari sisi PER, PBV, ROE, dan dividen.",
+    "feature_2_example": "Contoh: \"Bandingkan valuasi perbankan besar: BBCA, BBRI, BMRI, dan BBNI.\"",
+    "feature_3_title": "Penyaring Saham Cerdas",
+    "feature_3_desc": "Cari emiten yang sesuai dengan kriteria spesifik Anda tanpa mengatur filter teknis yang rumit. Sistem akan menyajikan daftar saham teratas yang memenuhi kriteria.",
+    "feature_3_example": "Contoh: \"Cari saham sektor barang konsumen dengan dividen tinggi dan utang rendah.\"",
+    "workspace_badge": "Ruang Kerja & Pemantauan",
+    "workspace_title": "Kelola Seluruh Riset dalam Satu Dasbor",
+    "workspace_1_title": "Watchlist & Riwayat Tersimpan",
+    "workspace_1_desc": "Simpan daftar saham incaran dan riwayat analisis Anda secara privat di akun pribadi agar dapat diakses kembali kapan saja.",
+    "workspace_2_title": "Ringkasan Sektor Pasar Modal",
+    "workspace_2_desc": "Pantau pergerakan sektor industri bursa dan emiten yang sedang aktif untuk mendapatkan konteks pasar sebelum mengambil keputusan."
+}

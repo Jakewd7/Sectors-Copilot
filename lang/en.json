@@ -1,0 +1,23 @@
+{
+    "badge_title": "Indonesian Capital Market Financial Research Assistant",
+    "hero_title": "IDX Stock Research & Valuation Made Faster and Structured",
+    "hero_desc": "Sectors Copilot automates fundamental analysis for the Indonesian stock market. Simply query in natural language to dissect company performance, benchmark industry ratios, and screen potential stocks accurately.",
+    "cta_button": "Start analyzing now",
+    "features_badge": "Capabilities",
+    "features_title": "Practical Solutions for Capital Market Analysis",
+    "feature_1_title": "Financial Research Chatbot",
+    "feature_1_desc": "Query company financials, valuation trends, or recent performance summaries directly in Indonesian or English without manually digging through financial reports.",
+    "feature_1_example": "Example: \"How has BBCA's profit growth and leverage trended over the last 3 years?\"",
+    "feature_2_title": "Industry Peer Comparison",
+    "feature_2_desc": "Compare multiple companies side-by-side against sector averages to evaluate relative attractiveness across PER, PBV, ROE, and dividend yields.",
+    "feature_2_example": "Example: \"Compare valuations among major banks: BBCA, BBRI, BMRI, and BBNI.\"",
+    "feature_3_title": "Smart Stock Screener",
+    "feature_3_desc": "Screen stocks tailored to your custom criteria without configuring complex technical filters. The system delivers top matches aligned with your metrics.",
+    "feature_3_example": "Example: \"Find consumer goods stocks with high dividend yields and low debt.\"",
+    "workspace_badge": "Workspace & Tracking",
+    "workspace_title": "Manage All Research in One Unified Dashboard",
+    "workspace_1_title": "Watchlist & Saved History",
+    "workspace_1_desc": "Save watchlist candidates and private analytical records to your personal account for instant retrieval at any time.",
+    "workspace_2_title": "Capital Market Sector Overview",
+    "workspace_2_desc": "Track market sector movements and actively traded tickers to gain macro context before making investment decisions."
+}
