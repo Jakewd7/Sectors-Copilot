@@ -96,6 +96,22 @@ body {
     opacity: 1;
 }
 
+/*
+ * Scrollbar control. Scroll containers only show a bar where the OS allows it:
+ * macOS/iOS overlay scrollbars stay hidden, Windows/Linux are hidden explicitly.
+ * Content remains scrollable — only the visual bar is suppressed.
+ */
+.no-scrollbar {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* legacy Edge/IE */
+}
+
+.no-scrollbar::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none; /* Chrome, Safari, Chromium Edge */
+}
+
 @import "./themes/pastel-green.css";
 
 @import "./preline-bridge.css";
