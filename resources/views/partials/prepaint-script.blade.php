@@ -14,6 +14,11 @@
                     stored = localStorage.getItem('theme');
                 } catch (e) {}
 
+                if (stored !== 'light' && stored !== 'dark') {
+                    var match = document.cookie.match(/(?:^|;\s*)theme=(light|dark)/);
+                    stored = match ? match[1] : null;
+                }
+
                 return stored === 'light' ? 'light' : 'dark';
             },
 
@@ -52,7 +57,9 @@
         window.SectorsChrome = chrome;
 
         try {
-            chrome.applyTheme(chrome.readTheme(), false);
+            var resolved = chrome.applyTheme(chrome.readTheme(), false);
+
+            document.cookie = 'theme=' + resolved + ';path=/;max-age=31536000;SameSite=Lax';
         } catch (e) {}
 
         @if ($withSidebar ?? false)

@@ -27,7 +27,8 @@
     --color-accent-dim: var(--theme-accent-dim);
     --color-text-primary: var(--theme-text-primary);
     --color-text-muted: var(--theme-text-muted);
-    --color-danger: #e2a5a0;
+    --color-accent-foreground: var(--theme-on-accent);
+    --color-danger: var(--theme-danger);
 }
 
 html.dark {
@@ -43,6 +44,8 @@ html.dark {
     --theme-focus: #4d6b57;
     --theme-field: #1e2923;
     --theme-field-border: #465f51;
+    --theme-on-accent: #0d120f;
+    --theme-danger: #e2a5a0;
 }
 
 html:not(.light):not(.dark) {
@@ -58,6 +61,8 @@ html:not(.light):not(.dark) {
     --theme-focus: #4d6b57;
     --theme-field: #1c2620;
     --theme-field-border: #33463b;
+    --theme-on-accent: #0d120f;
+    --theme-danger: #e2a5a0;
 }
 
 html.light,
@@ -74,6 +79,8 @@ html:not(.dark) {
     --theme-focus: #34a06a;
     --theme-field: #ffffff;
     --theme-field-border: #9fb3a8;
+    --theme-on-accent: #0d120f;
+    --theme-danger: #a8433d;
 }
 
 body {

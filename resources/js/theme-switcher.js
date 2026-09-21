@@ -3,7 +3,16 @@
         const root = document.documentElement;
         window.SectorsChrome = {
             currentTheme: () => (root.classList.contains('dark') ? 'dark' : 'light'),
-            readTheme: () => (localStorage.getItem('theme') === 'light' ? 'light' : 'dark'),
+            readTheme: () => {
+                let stored = localStorage.getItem('theme');
+
+                if (stored !== 'light' && stored !== 'dark') {
+                    const match = document.cookie.match(/(?:^|;\s*)theme=(light|dark)/);
+                    stored = match ? match[1] : null;
+                }
+
+                return stored === 'light' ? 'light' : 'dark';
+            },
             applyTheme(theme, persist) {
                 const value = theme === 'light' ? 'light' : 'dark';
                 root.classList.toggle('dark', value === 'dark');

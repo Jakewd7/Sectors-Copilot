@@ -3,11 +3,11 @@
 @section('content')
     <div data-hs-layout-splitter='{"horizontalSplitterClasses": "hs-layout-splitter-control"}'
         class="flex h-full bg-base text-foreground overflow-hidden font-sans" x-data="copilotWorkspace({
-                        initialSessionId: '{{ $activeSession->id ?? '' }}',
-                        initialSessionTitle: '{{ addslashes($activeSession->title ?? '') }}',
-                        initialMessages: @js($activeSession ? $activeSession->messages : []),
-                        initialPrompt: '{{ addslashes($initialPrompt ?? '') }}'
-                    })">
+            initialSessionId: '{{ $activeSession->id ?? '' }}',
+            initialSessionTitle: '{{ addslashes($activeSession->title ?? '') }}',
+            initialMessages: @js($activeSession ? $activeSession->messages : []),
+            initialPrompt: '{{ addslashes($initialPrompt ?? '') }}'
+        })">
 
         <div data-hs-layout-splitter-horizontal-group class="flex h-full w-full min-w-0">
 
@@ -25,9 +25,6 @@
 
                 @include('agent::partials.session-list')
 
-                <div class="p-4 border-t border-layer-line text-xs text-muted-foreground-1 text-center">
-                    Credit Shield Active • PostgreSQL JSONB Cache
-                </div>
             </div>
 
             <div data-hs-layout-splitter-item='{"dynamicSize": 48, "minSize": 30}'
@@ -55,8 +52,8 @@
                                 <div class="max-w-3xl bg-card border border-card-line border-l-4 border-l-rose-500 rounded-2xl rounded-bl-md p-4 shadow-2xs"
                                     role="alert">
                                     <div class="flex items-start gap-3">
-                                        <svg class="size-5 shrink-0 text-rose-500 mt-0.5" fill="none" stroke="currentColor"
-                                            stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
+                                        <svg class="size-5 shrink-0 text-rose-500 mt-0.5" fill="none"
+                                            stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true">
                                             <path stroke-linecap="round" stroke-linejoin="round"
                                                 d="M12 9v4m0 4h.01M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z" />
                                         </svg>
@@ -85,8 +82,8 @@
 
                             <template x-if="!msg.error">
                                 <div :class="msg.role === 'user' ?
-                                            'bg-primary border border-primary-line text-primary-foreground ml-auto rounded-2xl rounded-br-md' :
-                                            'bg-card border border-card-line text-foreground rounded-2xl rounded-bl-md'"
+                                    'bg-primary border border-primary-line text-primary-foreground ml-auto rounded-2xl rounded-br-md' :
+                                    'bg-card border border-card-line text-foreground rounded-2xl rounded-bl-md'"
                                     class="max-w-3xl p-4 shadow-2xs">
                                     <span class="text-[11px] font-semibold uppercase tracking-wider block mb-1 opacity-70"
                                         x-text="msg.role"></span>
@@ -293,19 +290,20 @@
                 sessionTitle: config.initialSessionTitle || '',
                 sessionList: @js(
                     $sessions->map(
-                        fn($s) => [
-                            'id' => $s->id,
-                            'title' => $s->title,
-                            'is_pinned' => (bool) $s->is_pinned,
-                            'updated_at' => optional($s->updated_at)->toISOString(),
-                        ],
-                    )->values()
+                            fn($s) => [
+                                'id' => $s->id,
+                                'title' => $s->title,
+                                'is_pinned' => (bool) $s->is_pinned,
+                                'updated_at' => optional($s->updated_at)->toISOString(),
+                            ],
+                        )->values()
                 ),
                 userPrompt: config.initialPrompt || '',
                 messages: config.initialMessages || [],
                 isResearching: false,
                 inspectorVisible: true,
-                csrfToken: document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                csrfToken: document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ||
+                    '',
                 inspectorSteps: [],
                 currentStepTime: '',
                 latestPayload: null,
@@ -335,7 +333,8 @@
                 get sessionListOrdered() {
                     return [...this.sessionList].sort((a, b) => {
                         if (a.is_pinned !== b.is_pinned) return a.is_pinned ? -1 : 1;
-                        return String(b.updated_at ?? '').localeCompare(String(a.updated_at ?? ''));
+                        return String(b.updated_at ?? '').localeCompare(String(a
+                            .updated_at ?? ''));
                     });
                 },
 
@@ -346,17 +345,20 @@
                         ratios[ratios.length - 1]?.profitability?.roe ?? null :
                         null;
 
-                    return fromHistory ?? overview?.financials?.roe ?? overview?.roe_ttm ?? overview?.roe ?? null;
+                    return fromHistory ?? overview?.financials?.roe ?? overview?.roe_ttm ?? overview
+                        ?.roe ?? null;
                 },
 
                 get latestDivYield() {
                     const overview = this.latestPayload?.get_company_overview;
 
-                    return overview?.dividend?.yield_ttm ?? overview?.valuation?.dividend_yield ?? overview?.dividend_yield ?? null;
+                    return overview?.dividend?.yield_ttm ?? overview?.valuation?.dividend_yield ??
+                        overview?.dividend_yield ?? null;
                 },
 
                 get forwardPeVsMedian() {
-                    const pe = parseFloat(this.latestPayload?.get_company_overview?.valuation?.forward_pe);
+                    const pe = parseFloat(this.latestPayload?.get_company_overview?.valuation
+                        ?.forward_pe);
                     const median = parseFloat(this.subsectorMedianPe);
                     if (!isNaN(pe) && !isNaN(median) && median > 0) {
                         return pe < median ? 'undervalued' : 'overvalued';
@@ -368,7 +370,8 @@
                     if (this._subsectorMedianPe !== null && this._subsectorMedianPe !== undefined) {
                         return this._subsectorMedianPe;
                     }
-                    const history = this.latestPayload?.get_sector_peers?.valuation?.historical_valuation;
+                    const history = this.latestPayload?.get_sector_peers?.valuation
+                        ?.historical_valuation;
                     const years = history ? Object.keys(history) : [];
 
                     return years.length ? history[years[years.length - 1]].pe : null;
@@ -394,7 +397,8 @@
 
                 renderMarkdown(content) {
                     if (!content) return '';
-                    return typeof marked !== 'undefined' ? marked.parse(content) : content.replace(/\n/g, '<br>');
+                    return typeof marked !== 'undefined' ? marked.parse(content) : content.replace(
+                        /\n/g, '<br>');
                 },
 
                 scrollToBottom() {
@@ -432,7 +436,8 @@
                                 id: result.session.id,
                                 title: result.session.title,
                                 is_pinned: !!result.session.is_pinned,
-                                updated_at: result.session.updated_at ?? new Date().toISOString(),
+                                updated_at: result.session.updated_at ?? new Date()
+                                .toISOString(),
                             };
                             this.sessionList.unshift(created);
                             this.activeSessionId = created.id;
@@ -455,7 +460,8 @@
                     if (this.activeSessionId === sessionId) return;
                     this.activeSessionId = sessionId;
                     await this.loadSession(sessionId);
-                    window.history.pushState({}, '', `{{ route('agent.workspace') }}?session_id=${sessionId}`);
+                    window.history.pushState({}, '',
+                        `{{ route('agent.workspace') }}?session_id=${sessionId}`);
                 },
 
                 async loadSession(sessionId) {
@@ -495,7 +501,8 @@
 
                         if (lastMsg.step_logs && lastMsg.step_logs.length > 0) {
                             this.inspectorSteps = lastMsg.step_logs.map(log => {
-                                const error = log.payload_data?.error ?? log.error_message ?? '';
+                                const error = log.payload_data?.error ?? log.error_message ??
+                                '';
 
                                 return {
                                     status: error ? 'failed' : (log.status ?? 'success'),
@@ -609,7 +616,8 @@
                                     this.messages = [];
                                     this.inspectorSteps = [];
                                     this.latestPayload = null;
-                                    window.history.replaceState({}, '', "{{ route('agent.workspace') }}");
+                                    window.history.replaceState({}, '',
+                                        "{{ route('agent.workspace') }}");
                                 }
                             }
                         }
@@ -626,7 +634,8 @@
                 },
 
                 async streamPrompt(prompt, botMessageId) {
-                    const url = `/api/v1/agent/chat/stream?chat_session_id=${this.activeSessionId}&prompt=${encodeURIComponent(prompt)}`;
+                    const url =
+                        `/api/v1/agent/chat/stream?chat_session_id=${this.activeSessionId}&prompt=${encodeURIComponent(prompt)}`;
 
                     let res;
                     try {
@@ -659,13 +668,16 @@
                             } catch {
                                 detail = raw.slice(0, 300);
                             }
-                        } catch { }
+                        } catch {}
 
                         throw {
-                            title: res.status === 401 ? 'Your session expired' : (res.status === 422 ? 'The prompt was rejected' : 'The copilot could not start'),
+                            title: res.status === 401 ? 'Your session expired' : (res.status ===
+                                    422 ? 'The prompt was rejected' : 'The copilot could not start'
+                                    ),
                             message: serverMessage || (res.status === 401 ?
                                 'Please sign in again, then resend your prompt.' :
-                                'The server returned an error before the answer started. Please resend your prompt.'),
+                                'The server returned an error before the answer started. Please resend your prompt.'
+                                ),
                             detail: detail || `HTTP ${res.status}`,
                         };
                     }
@@ -707,7 +719,8 @@
                                 break;
 
                             case 'token':
-                                this.appendToMessage(botMessageId, data.text ?? data.token ?? '');
+                                this.appendToMessage(botMessageId, data.text ?? data.token ??
+                                    '');
                                 break;
 
                             case 'done':
@@ -721,7 +734,8 @@
                             case 'error':
                                 serverError = {
                                     title: 'The AI model failed to respond',
-                                    message: data.message || 'The model did not return an answer. Please send your prompt again.',
+                                    message: data.message ||
+                                        'The model did not return an answer. Please send your prompt again.',
                                     detail: data.detail || data.exception || '',
                                 };
                                 break;
@@ -730,10 +744,15 @@
 
                     try {
                         while (true) {
-                            const { done, value } = await reader.read();
+                            const {
+                                done,
+                                value
+                            } = await reader.read();
                             if (done) break;
 
-                            buffer += decoder.decode(value, { stream: true });
+                            buffer += decoder.decode(value, {
+                                stream: true
+                            });
 
                             let sep;
                             while ((sep = buffer.search(/\r?\n\r?\n/)) !== -1) {
@@ -835,7 +854,8 @@
 
                 handlePromptFailure(err, botMessageId, prompt) {
                     const title = err?.title || 'The copilot could not finish this request';
-                    const message = err?.message || 'Something went wrong while the model was answering. Please send your prompt again.';
+                    const message = err?.message ||
+                        'Something went wrong while the model was answering. Please send your prompt again.';
                     const detail = err?.detail || '';
 
                     console.error('Prompt failed:', {
@@ -908,7 +928,8 @@
                     } : data;
 
                     const existingStepIndex = this.inspectorSteps.findIndex(
-                        s => (s.tool && s.tool === incoming.tool) || (s.endpoint && s.endpoint === incoming
+                        s => (s.tool && s.tool === incoming.tool) || (s.endpoint && s.endpoint ===
+                            incoming
                             .endpoint)
                     );
 
@@ -939,7 +960,7 @@
 
                     const failed = Object.values(payload).find(
                         (value) => value && typeof value === 'object' && typeof value.error ===
-                            'string'
+                        'string'
                     );
 
                     return failed ? failed.error : '';
