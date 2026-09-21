@@ -12,6 +12,8 @@
 
     @include('partials.prepaint-script')
 
+    @include('partials.loading-bar')
+
     @fonts
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
