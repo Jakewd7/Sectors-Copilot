@@ -81,13 +81,48 @@
                             </template>
 
                             <template x-if="!msg.error">
-                                <div :class="msg.role === 'user' ?
-                                    'bg-primary border border-primary-line text-primary-foreground ml-auto rounded-2xl rounded-br-md' :
-                                    'bg-card border border-card-line text-foreground rounded-2xl rounded-bl-md'"
-                                    class="max-w-3xl p-4 shadow-2xs">
-                                    <span class="text-[11px] font-semibold uppercase tracking-wider block mb-1 opacity-70"
-                                        x-text="msg.role"></span>
-                                    <div class="text-sm leading-relaxed" x-html="renderMarkdown(msg.content)"></div>
+                                <div class="group/bubble max-w-3xl"
+                                    :class="msg.role === 'user' ? 'ml-auto' : ''">
+
+                                    <div :class="msg.role === 'user' ?
+                                        'bg-primary border border-primary-line text-primary-foreground rounded-2xl rounded-br-md' :
+                                        'bg-card border border-card-line text-foreground rounded-2xl rounded-bl-md'"
+                                        class="p-4 shadow-2xs">
+                                        <span class="text-[11px] font-semibold uppercase tracking-wider block mb-1 opacity-70"
+                                            x-text="msg.role"></span>
+                                        <div class="text-sm leading-relaxed" x-html="renderMarkdown(msg.content)"></div>
+                                    </div>
+
+                                    <div class="bubble-actions flex mt-1.5 opacity-0 focus-within:opacity-100 transition-opacity duration-150"
+                                        data-bubble-actions
+                                        :data-bubble-id="msg.id"
+                                        :class="[
+                                            revealByProximity(msg.id) ? 'opacity-100' : '',
+                                            msg.role === 'user' ? 'justify-end' : 'justify-start'
+                                        ]">
+                                        <button type="button" @click="copyMessage(msg)"
+                                            :aria-label="msg.role === 'user' ? 'Copy message' : 'Copy response'"
+                                            :title="copiedId === msg.id ? 'Copied' : (msg.role === 'user' ? 'Copy message' : 'Copy response')"
+                                            class="inline-flex items-center gap-x-1.5 px-2 py-1 rounded-md text-[11px] font-medium text-muted-foreground-1 hover:text-foreground hover:bg-layer-hover transition">
+
+                                            <svg x-show="copiedId !== msg.id" class="size-3.5 shrink-0" fill="none"
+                                                stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"
+                                                aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                    d="M8 7V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2M5 8h9a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-9a2 2 0 0 1 2-2Z" />
+                                            </svg>
+
+                                            <svg x-show="copiedId === msg.id" x-cloak
+                                                class="size-3.5 shrink-0 text-emerald-500" fill="none"
+                                                stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"
+                                                aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" d="m5 13 4 4L19 7" />
+                                            </svg>
+
+                                            <span
+                                                x-text="copiedId === msg.id ? 'Copied' : (msg.role === 'user' ? 'Copy message' : 'Copy response')"></span>
+                                        </button>
+                                    </div>
                                 </div>
                             </template>
                         </div>
@@ -308,6 +343,9 @@
                 currentStepTime: '',
                 latestPayload: null,
                 _subsectorMedianPe: null,
+                copiedId: null,
+                _copiedTimer: null,
+                _hoveredBubbleId: null,
                 renameTarget: null,
                 renameTitle: '',
                 deleteTarget: null,
@@ -328,6 +366,32 @@
                     window.addEventListener('inspector-update', (e) => {
                         this.handleInspectorEvent(e.detail);
                     });
+
+                    this.bindBubbleProximity();
+                },
+
+                bindBubbleProximity() {
+                    const container = document.getElementById('message-container');
+
+                    if (!container) {
+                        return;
+                    }
+
+                    let frame = null;
+
+                    container.addEventListener('mousemove', (event) => {
+                        if (frame !== null) {
+                            return;
+                        }
+
+                        frame = window.requestAnimationFrame(() => {
+                            frame = null;
+                            this.trackBubbleProximity(event);
+                        });
+                    });
+
+                    container.addEventListener('mouseleave', () => this.clearBubbleProximity());
+                    container.addEventListener('scroll', () => this.clearBubbleProximity(), { passive: true });
                 },
 
                 get sessionListOrdered() {
@@ -406,6 +470,103 @@
                         const container = document.getElementById('message-container');
                         if (container) container.scrollTop = container.scrollHeight;
                     });
+                },
+
+                revealByProximity(id) {
+                    return this._hoveredBubbleId === id;
+                },
+
+                trackBubbleProximity(event) {
+                    const actions = document.querySelectorAll('[data-bubble-actions]');
+
+                    if (!actions.length) {
+                        return;
+                    }
+
+                    const x = event.clientX;
+                    const y = event.clientY;
+                    const radius = 110;
+                    let nearest = null;
+                    let nearestDistance = Infinity;
+
+                    actions.forEach((el) => {
+                        const rect = el.getBoundingClientRect();
+
+                        if (rect.width === 0 && rect.height === 0) {
+                            return;
+                        }
+
+                        const dx = Math.max(rect.left - x, 0, x - rect.right);
+                        const dy = Math.max(rect.top - y, 0, y - rect.bottom);
+                        const distance = Math.hypot(dx, dy);
+
+                        if (distance < radius && distance < nearestDistance) {
+                            nearestDistance = distance;
+                            nearest = el.dataset.bubbleId;
+                        }
+                    });
+
+                    if (nearest !== this._hoveredBubbleId) {
+                        this._hoveredBubbleId = nearest;
+                    }
+                },
+
+                clearBubbleProximity() {
+                    if (this._hoveredBubbleId !== null) {
+                        this._hoveredBubbleId = null;
+                    }
+                },
+
+                async copyMessage(msg) {
+                    const text = String(msg?.content ?? '');
+
+                    if (!text) {
+                        return;
+                    }
+
+                    const ok = await this.writeToClipboard(text);
+
+                    if (!ok) {
+                        this.$store.toast.push({
+                            variant: 'error',
+                            title: 'Could not copy',
+                            message: 'Your browser blocked clipboard access. Copy the text manually instead.',
+                        });
+
+                        return;
+                    }
+
+                    this.copiedId = msg.id;
+                    clearTimeout(this._copiedTimer);
+                    this._copiedTimer = setTimeout(() => {
+                        this.copiedId = null;
+                    }, 1800);
+                },
+
+                async writeToClipboard(text) {
+                    try {
+                        if (navigator.clipboard && window.isSecureContext) {
+                            await navigator.clipboard.writeText(text);
+                            return true;
+                        }
+                    } catch (e) {}
+
+                    try {
+                        const area = document.createElement('textarea');
+                        area.value = text;
+                        area.setAttribute('readonly', '');
+                        area.style.position = 'fixed';
+                        area.style.top = '-1000px';
+                        area.style.opacity = '0';
+                        document.body.appendChild(area);
+                        area.select();
+                        const ok = document.execCommand('copy');
+                        document.body.removeChild(area);
+
+                        return ok;
+                    } catch (e) {
+                        return false;
+                    }
                 },
 
                 updateTimestamp() {
