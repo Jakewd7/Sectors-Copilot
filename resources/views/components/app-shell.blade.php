@@ -52,7 +52,7 @@
             </svg>
         </button>
 
-        <aside class="relative h-full w-64 lg:w-[var(--sidebar-w)] flex flex-col border-r border-layer-line bg-layer
+        <aside class="h-full w-64 lg:w-[var(--sidebar-w)] flex flex-col border-r border-layer-line bg-layer
                       fixed inset-y-0 left-0 z-50 lg:static lg:z-auto
                       -translate-x-full lg:translate-x-0"
                :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'">

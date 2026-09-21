@@ -44,11 +44,11 @@
             <div class="flex items-center gap-2">
                 <div class="inline-flex items-center p-1 bg-surface border border-border rounded-xl text-[11px] font-semibold">
                     <a href="{{ route('lang.switch', 'id') }}"
-                        class="px-2.5 py-1 rounded-lg transition {{ app()->getLocale() === 'id' ? 'bg-accent text-accent-foreground' : 'text-text-muted hover:text-text-primary' }}">
+                        class="px-2.5 py-1.5 rounded-lg transition {{ app()->getLocale() === 'id' ? 'bg-accent text-accent-foreground' : 'text-text-muted hover:text-text-primary' }}">
                         ID
                     </a>
                     <a href="{{ route('lang.switch', 'en') }}"
-                        class="px-2.5 py-1 rounded-lg transition {{ app()->getLocale() === 'en' ? 'bg-accent text-accent-foreground' : 'text-text-muted hover:text-text-primary' }}">
+                        class="px-2.5 py-1.5 rounded-lg transition {{ app()->getLocale() === 'en' ? 'bg-accent text-accent-foreground' : 'text-text-muted hover:text-text-primary' }}">
                         EN
                     </a>
                 </div>
@@ -70,7 +70,39 @@
                     <span>{{ __('cta_button') }}</span>
                     <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
                 </a>
+
+                <button type="button" onclick="toggleMobileNav()" aria-controls="mobileNav" aria-expanded="false"
+                    aria-label="Open navigation"
+                    class="md:hidden size-10 inline-flex items-center justify-center rounded-xl border border-border bg-surface text-text-muted hover:text-text-primary transition">
+                    <svg class="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                            d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                </button>
             </div>
+        </div>
+
+        <div id="mobileNav" class="hidden md:hidden border-t border-border bg-base/95 backdrop-blur-md">
+            <nav class="max-w-6xl mx-auto px-4 py-4 flex flex-col" aria-label="Mobile">
+                <a href="#capabilities" onclick="toggleMobileNav()"
+                    class="py-3 text-sm font-medium text-text-muted hover:text-text-primary border-b border-border transition">
+                    {{ __('footer_product') }}
+                </a>
+                <a href="#insights" onclick="toggleMobileNav()"
+                    class="py-3 text-sm font-medium text-text-muted hover:text-text-primary border-b border-border transition">
+                    {{ __('footer_insights') }}
+                </a>
+                <a href="#faq" onclick="toggleMobileNav()"
+                    class="py-3 text-sm font-medium text-text-muted hover:text-text-primary transition">
+                    {{ __('footer_faq') }}
+                </a>
+
+                <a href="{{ \Illuminate\Support\Facades\Route::has('register') ? route('register') : '#' }}"
+                    class="mt-4 py-3 bg-accent text-accent-foreground rounded-xl text-sm font-semibold inline-flex items-center justify-center gap-2">
+                    <span>{{ __('cta_button') }}</span>
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                </a>
+            </nav>
         </div>
     </header>
 
@@ -79,7 +111,7 @@
     </main>
 
     <footer class="border-t border-border bg-surface/40 mt-4">
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 sm:pt-14 pb-16 sm:pb-20">
 
             <div class="grid gap-10 lg:gap-8 lg:grid-cols-[1.4fr_repeat(4,1fr)]">
 
@@ -110,18 +142,18 @@
                     </h3>
                     <ul class="mt-4 space-y-2.5">
                         <li>
-                            <a href="#capabilities" class="text-[12.5px] text-text-muted hover:text-text-primary transition">
+                            <a href="#capabilities" class="inline-block py-2 text-[13px] text-text-muted hover:text-text-primary transition">
                                 {{ __('footer_link_capabilities') }}
                             </a>
                         </li>
                         <li>
                             <a href="{{ \Illuminate\Support\Facades\Route::has('insights.index') ? route('insights.index') : '#' }}"
-                                class="text-[12.5px] text-text-muted hover:text-text-primary transition">
+                                class="inline-block py-2 text-[13px] text-text-muted hover:text-text-primary transition">
                                 {{ __('footer_insights') }}
                             </a>
                         </li>
                         <li>
-                            <a href="#faq" class="text-[12.5px] text-text-muted hover:text-text-primary transition">
+                            <a href="#faq" class="inline-block py-2 text-[13px] text-text-muted hover:text-text-primary transition">
                                 {{ __('footer_link_faq') }}
                             </a>
                         </li>
@@ -135,20 +167,20 @@
                     <ul class="mt-4 space-y-2.5">
                         <li>
                             <a href="{{ auth()->check() ? route('dashboard.index') : ( \Illuminate\Support\Facades\Route::has('register') ? route('register') : '#') }}"
-                                class="text-[12.5px] text-text-muted hover:text-text-primary transition">
+                                class="inline-block py-2 text-[13px] text-text-muted hover:text-text-primary transition">
                                 {{ __('footer_link_dashboard') }}
                             </a>
                         </li>
                         @if (\Illuminate\Support\Facades\Route::has('agent.workspace'))
                             <li>
                                 <a href="{{ auth()->check() ? route('agent.workspace') : route('login') }}"
-                                    class="text-[12.5px] text-text-muted hover:text-text-primary transition">
+                                    class="inline-block py-2 text-[13px] text-text-muted hover:text-text-primary transition">
                                     {{ __('footer_link_agent') }}
                                 </a>
                             </li>
                         @endif
                         <li>
-                            <a href="#capabilities" class="text-[12.5px] text-text-muted hover:text-text-primary transition">
+                            <a href="#capabilities" class="inline-block py-2 text-[13px] text-text-muted hover:text-text-primary transition">
                                 {{ __('footer_link_watchlist') }}
                             </a>
                         </li>
@@ -161,18 +193,18 @@
                     </h3>
                     <ul class="mt-4 space-y-2.5">
                         <li>
-                            <a href="#capabilities" class="text-[12.5px] text-text-muted hover:text-text-primary transition">
+                            <a href="#capabilities" class="inline-block py-2 text-[13px] text-text-muted hover:text-text-primary transition">
                                 {{ __('footer_link_about') }}
                             </a>
                         </li>
                         <li>
-                            <a href="#faq" class="text-[12.5px] text-text-muted hover:text-text-primary transition">
+                            <a href="#faq" class="inline-block py-2 text-[13px] text-text-muted hover:text-text-primary transition">
                                 {{ __('footer_link_faq') }}
                             </a>
                         </li>
                         <li>
                             <a href="mailto:hello@sectorscopilot.app"
-                                class="text-[12.5px] text-text-muted hover:text-text-primary transition">
+                                class="inline-block py-2 text-[13px] text-text-muted hover:text-text-primary transition">
                                 {{ __('footer_link_contact') }}
                             </a>
                         </li>
@@ -187,26 +219,26 @@
                         @auth
                             <li>
                                 <a href="{{ route('workspace.profile') }}"
-                                    class="text-[12.5px] text-text-muted hover:text-text-primary transition">
+                                    class="inline-block py-2 text-[13px] text-text-muted hover:text-text-primary transition">
                                     {{ __('footer_link_profile') }}
                                 </a>
                             </li>
                         @else
                             <li>
                                 <a href="{{ \Illuminate\Support\Facades\Route::has('login') ? route('login') : '#' }}"
-                                    class="text-[12.5px] text-text-muted hover:text-text-primary transition">
+                                    class="inline-block py-2 text-[13px] text-text-muted hover:text-text-primary transition">
                                     {{ __('footer_link_signin') }}
                                 </a>
                             </li>
                             <li>
                                 <a href="{{ \Illuminate\Support\Facades\Route::has('register') ? route('register') : '#' }}"
-                                    class="text-[12.5px] text-text-muted hover:text-text-primary transition">
+                                    class="inline-block py-2 text-[13px] text-text-muted hover:text-text-primary transition">
                                     {{ __('footer_link_register') }}
                                 </a>
                             </li>
                         @endauth
                         <li>
-                            <a href="#faq" class="text-[12.5px] text-text-muted hover:text-text-primary transition">
+                            <a href="#faq" class="inline-block py-2 text-[13px] text-text-muted hover:text-text-primary transition">
                                 {{ __('footer_legal_disclaimer') }}
                             </a>
                         </li>
@@ -223,14 +255,14 @@
                     &copy; {{ date('Y') }} {{ config('brand.name') }}. {{ __('footer_rights') }}
                 </p>
 
-                <nav class="flex items-center gap-5 text-[11px] text-text-muted" aria-label="Legal">
-                    <a href="#faq" class="hover:text-text-primary transition">
+                <nav class="flex flex-wrap items-center gap-x-6 gap-y-3 text-[12px] text-text-muted" aria-label="Legal">
+                    <a href="#faq" class="py-2 hover:text-text-primary transition">
                         {{ __('footer_legal_privacy') }}
                     </a>
-                    <a href="#faq" class="hover:text-text-primary transition">
+                    <a href="#faq" class="py-2 hover:text-text-primary transition">
                         {{ __('footer_legal_terms') }}
                     </a>
-                    <a href="#faq" class="hover:text-text-primary transition">
+                    <a href="#faq" class="py-2 hover:text-text-primary transition">
                         {{ __('footer_legal_disclaimer') }}
                     </a>
                 </nav>
@@ -239,6 +271,16 @@
     </footer>
 
     <script>
+        function toggleMobileNav() {
+            var panel = document.getElementById('mobileNav');
+            var btn = document.querySelector('[aria-controls="mobileNav"]');
+            if (!panel || !btn) return;
+
+            var isOpen = !panel.classList.contains('hidden');
+            panel.classList.toggle('hidden', isOpen);
+            btn.setAttribute('aria-expanded', String(!isOpen));
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             if (typeof lucide !== 'undefined') {
                 lucide.createIcons();
