@@ -18,11 +18,11 @@ class ReportExportController extends Controller
             ->firstOrFail();
 
         $markdown = "# Laporan Riset Saham: {$session->title}\n\n";
-        $markdown .= "*Tanggal Ekspor: " . now()->format('d M Y H:i') . "*\n\n---\n\n";
+        $markdown .= '*Tanggal Ekspor: '.now()->format('d M Y H:i')."*\n\n---\n\n";
 
         foreach ($session->messages as $msg) {
             $roleLabel = $msg->role === 'user' ? '### 👤 Pertanyaan Riset' : '### 🤖 Analisis Copilot';
-            $markdown .= "{$roleLabel}\n\n" . $msg->content . "\n\n";
+            $markdown .= "{$roleLabel}\n\n".$msg->content."\n\n";
         }
 
         return response($markdown, 200, [
@@ -38,7 +38,11 @@ class ReportExportController extends Controller
             ->where('user_id', $request->user()->id)
             ->firstOrFail();
 
-        $pdf = Pdf::loadView('agent::exports.report-pdf', compact('session'));
+        $pdf = Pdf::loadView('agent::exports.report-pdf', [
+            'session' => $session,
+            'messages' => $session->messages,
+            'exportedAt' => now(),
+        ])->setOption('isFontSubsettingEnabled', true);
 
         return $pdf->download("laporan-riset-{$session->id}.pdf");
     }
