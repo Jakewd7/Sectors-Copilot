@@ -25,7 +25,8 @@
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 
-<body class="bg-base text-text-primary font-sans antialiased min-h-screen flex flex-col selection:bg-accent selection:text-accent-foreground">
+<body
+    class="bg-base text-text-primary font-sans antialiased min-h-screen flex flex-col selection:bg-accent selection:text-accent-foreground">
 
     <header class="sticky top-0 z-40 w-full border-b border-border bg-base/85 backdrop-blur-md">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
@@ -33,8 +34,8 @@
                 <div class="size-8 rounded-lg bg-accent flex items-center justify-center text-accent-foreground">
                     <i data-lucide="line-chart" class="w-4 h-4"></i>
                 </div>
-                <span class="font-extrabold text-[15px] tracking-tight text-text-primary">Sectors<span
-                        class="text-accent">Copilot</span></span>
+                <span class="font-extrabold text-[15px] tracking-tight text-text-primary">Synth<span
+                        class="text-accent">EX</span></span>
             </a>
 
             <nav class="hidden md:flex items-center gap-7 text-[13px] text-text-muted" aria-label="Main">
@@ -44,7 +45,8 @@
             </nav>
 
             <div class="flex items-center gap-2">
-                <div class="inline-flex items-center p-1 bg-surface border border-border rounded-xl text-[11px] font-semibold">
+                <div
+                    class="inline-flex items-center p-1 bg-surface border border-border rounded-xl text-[11px] font-semibold">
                     <a href="{{ route('lang.switch', 'id') }}"
                         class="px-2.5 py-1.5 rounded-lg transition {{ app()->getLocale() === 'id' ? 'bg-accent text-accent-foreground' : 'text-text-muted hover:text-text-primary' }}">
                         ID
@@ -119,11 +121,12 @@
 
                 <div class="lg:pr-8">
                     <a href="/" class="flex items-center gap-2.5">
-                        <div class="size-8 rounded-lg bg-accent flex items-center justify-center text-accent-foreground">
+                        <div
+                            class="size-8 rounded-lg bg-accent flex items-center justify-center text-accent-foreground">
                             <i data-lucide="line-chart" class="w-4 h-4"></i>
                         </div>
                         <span class="font-extrabold text-[15px] tracking-tight text-text-primary">
-                            Sectors<span class="text-accent">Copilot</span>
+                            Synth<span class="text-accent">EX</span>
                         </span>
                     </a>
 
@@ -144,7 +147,8 @@
                     </h3>
                     <ul class="mt-4 space-y-2.5">
                         <li>
-                            <a href="#capabilities" class="inline-block py-2 text-[13px] text-text-muted hover:text-text-primary transition">
+                            <a href="#capabilities"
+                                class="inline-block py-2 text-[13px] text-text-muted hover:text-text-primary transition">
                                 {{ __('footer_link_capabilities') }}
                             </a>
                         </li>
@@ -155,7 +159,8 @@
                             </a>
                         </li>
                         <li>
-                            <a href="#faq" class="inline-block py-2 text-[13px] text-text-muted hover:text-text-primary transition">
+                            <a href="#faq"
+                                class="inline-block py-2 text-[13px] text-text-muted hover:text-text-primary transition">
                                 {{ __('footer_link_faq') }}
                             </a>
                         </li>
@@ -168,7 +173,7 @@
                     </h3>
                     <ul class="mt-4 space-y-2.5">
                         <li>
-                            <a href="{{ auth()->check() ? route('dashboard.index') : ( \Illuminate\Support\Facades\Route::has('register') ? route('register') : '#') }}"
+                            <a href="{{ auth()->check() ? route('dashboard.index') : (\Illuminate\Support\Facades\Route::has('register') ? route('register') : '#') }}"
                                 class="inline-block py-2 text-[13px] text-text-muted hover:text-text-primary transition">
                                 {{ __('footer_link_dashboard') }}
                             </a>
@@ -182,7 +187,8 @@
                             </li>
                         @endif
                         <li>
-                            <a href="#capabilities" class="inline-block py-2 text-[13px] text-text-muted hover:text-text-primary transition">
+                            <a href="#capabilities"
+                                class="inline-block py-2 text-[13px] text-text-muted hover:text-text-primary transition">
                                 {{ __('footer_link_watchlist') }}
                             </a>
                         </li>
@@ -195,17 +201,19 @@
                     </h3>
                     <ul class="mt-4 space-y-2.5">
                         <li>
-                            <a href="#capabilities" class="inline-block py-2 text-[13px] text-text-muted hover:text-text-primary transition">
+                            <a href="#capabilities"
+                                class="inline-block py-2 text-[13px] text-text-muted hover:text-text-primary transition">
                                 {{ __('footer_link_about') }}
                             </a>
                         </li>
                         <li>
-                            <a href="#faq" class="inline-block py-2 text-[13px] text-text-muted hover:text-text-primary transition">
+                            <a href="#faq"
+                                class="inline-block py-2 text-[13px] text-text-muted hover:text-text-primary transition">
                                 {{ __('footer_link_faq') }}
                             </a>
                         </li>
                         <li>
-                            <a href="mailto:hello@sectorscopilot.app"
+                            <a href="mailto:hello@synthex.app"
                                 class="inline-block py-2 text-[13px] text-text-muted hover:text-text-primary transition">
                                 {{ __('footer_link_contact') }}
                             </a>
@@ -240,7 +248,8 @@
                             </li>
                         @endauth
                         <li>
-                            <a href="#faq" class="inline-block py-2 text-[13px] text-text-muted hover:text-text-primary transition">
+                            <a href="#faq"
+                                class="inline-block py-2 text-[13px] text-text-muted hover:text-text-primary transition">
                                 {{ __('footer_legal_disclaimer') }}
                             </a>
                         </li>

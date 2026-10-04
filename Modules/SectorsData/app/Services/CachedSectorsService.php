@@ -4,6 +4,7 @@ namespace Modules\SectorsData\Services;
 
 use App\Models\ApiCache;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class CachedSectorsService
@@ -22,17 +23,71 @@ class CachedSectorsService
         $normalizedParams = $this->normalizeParams($params);
         $cacheKey = hash('sha256', self::PROVIDER . ':' . $endpoint . ':' . json_encode($normalizedParams));
 
+        Log::info("[CachedSectorsService] Processing cache for endpoint: {$endpoint}", [
+            'cache_key' => $cacheKey,
+            'params' => $normalizedParams
+        ]);
+
         $cached = ApiCache::where('cache_key', $cacheKey)->first();
 
-        if ($cached) {
+        // 1. Jika Cache ADA dan BELUM EXPIRED -> Return Cached Data
+        if ($cached && ($cached->expires_at === null || !$cached->expires_at->isPast())) {
             $cached->increment('hit_count');
+
+            Log::info("[CachedSectorsService] Cache HIT for endpoint: {$endpoint}", [
+                'cache_key' => $cacheKey,
+                'hit_count' => $cached->hit_count
+            ]);
 
             return [
                 'data' => $cached->response_payload,
                 'is_cached' => true,
-                'is_stale' => $cached->expires_at !== null && $cached->expires_at->isPast(),
+                'is_stale' => false,
                 'cached_at' => $cached->updated_at,
             ];
+        }
+
+        // 2. Jika Cache TIDAK ADA / STALE -> Fetch API Baru & Simpan ke DB
+        Log::info("[CachedSectorsService] Cache MISS/EXPIRED. Fetching from API: {$endpoint}");
+
+        try {
+            $apiResponse = $apiCallback();
+
+            if (!empty($apiResponse)) {
+                $expiresAt = Carbon::now()->addHours($ttlHours);
+
+                $cacheRecord = ApiCache::updateOrCreate(
+                    ['cache_key' => $cacheKey],
+                    [
+                        'provider' => self::PROVIDER,
+                        'endpoint' => $endpoint,
+                        'request_params' => $normalizedParams,
+                        'response_payload' => $apiResponse,
+                        'expires_at' => $expiresAt,
+                    ]
+                );
+
+                Log::info("[CachedSectorsService] Successfully saved to database api_caches!", [
+                    'cache_key' => $cacheKey,
+                    'endpoint' => $endpoint,
+                    'expires_at' => $expiresAt->toDateTimeString()
+                ]);
+
+                return [
+                    'data' => $cacheRecord->response_payload,
+                    'is_cached' => false,
+                    'is_stale' => false,
+                    'cached_at' => $cacheRecord->updated_at,
+                ];
+            } else {
+                Log::warning("[CachedSectorsService] API returned empty payload for endpoint: {$endpoint}");
+            }
+        } catch (Throwable $e) {
+            Log::error("[CachedSectorsService] Exception during API call or saving cache: {$e->getMessage()}", [
+                'endpoint' => $endpoint,
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw $e;
         }
 
         return [

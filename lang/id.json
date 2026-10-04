@@ -1,7 +1,7 @@
 {
     "badge_title": "Asisten Riset Finansial Pasar Modal Indonesia",
     "hero_title": "Riset fundamental emiten IHSG, dalam hitungan detik",
-    "hero_desc": "Tanya dengan bahasa sehari-hari. Sectors Copilot menarik data keuangan terkini, membandingkan rekan sektor, dan menyusun matriks valuasi — supaya waktumu habis untuk mengambil keputusan, bukan menggali laporan.",
+    "hero_desc": "Tanya dengan bahasa sehari-hari. SynthEX menarik data keuangan terkini, membandingkan rekan sektor, dan menyusun matriks valuasi — supaya waktumu habis untuk mengambil keputusan, bukan menggali laporan.",
     "cta_button": "Mulai analisis gratis",
     "cta_secondary": "Lihat contoh nyata",
     "topbar_button": "Hubungi Kami",
@@ -67,7 +67,7 @@
     "faq_badge": "Pertanyaan Umum",
     "faq_title": "Pertanyaan yang paling sering muncul",
     "faq_1_q": "Apakah ini rekomendasi investasi?",
-    "faq_1_a": "Bukan. Sectors Copilot adalah alat riset. Setiap keluaran disertai disclaimer kepatuhan dan dimaksudkan untuk mempercepat analisis yang tetap kamu lakukan sendiri — bukan menggantikan penilaianmu.",
+    "faq_1_a": "Bukan. SynthEX adalah alat riset. Setiap keluaran disertai disclaimer kepatuhan dan dimaksudkan untuk mempercepat analisis yang tetap kamu lakukan sendiri — bukan menggantikan penilaianmu.",
     "faq_2_q": "Dari mana data pasarnya berasal?",
     "faq_2_a": "Data pasar dilayani Sectors API dan disimpan per endpoint, jadi mengulang pertanyaan tidak menghabiskan kuota tambahan. Artikel editorial ditulis meja analis kami.",
     "faq_3_q": "Bisa bertanya dalam bahasa Indonesia?",
@@ -84,7 +84,7 @@
     "footer_faq": "Pertanyaan Umum",
     "footer_signin": "Masuk",
     "footer_rights": "Seluruh hak dilindungi.",
-    "footer_disclaimer": "Sectors Copilot adalah alat riset finansial, bukan penasihat investasi. Tidak ada bagian dari halaman ini yang merupakan rekomendasi untuk membeli atau menjual sekuritas apa pun. Data pasar disediakan pihak ketiga dan dapat tertunda atau tidak lengkap. Selalu lakukan pemeriksaan sendiri.",
+    "footer_disclaimer": "SynthEX adalah alat riset finansial, bukan penasihat investasi. Tidak ada bagian dari halaman ini yang merupakan rekomendasi untuk membeli atau menjual sekuritas apa pun. Data pasar disediakan pihak ketiga dan dapat tertunda atau tidak lengkap. Selalu lakukan pemeriksaan sendiri.",
 
     "footer_col_research": "Riset",
     "footer_col_workspace": "Ruang Kerja",

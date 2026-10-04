@@ -3,6 +3,7 @@
 namespace Modules\SectorsData\Console;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
 use Modules\SectorsData\Services\CachedSectorsService;
 
 class WarmSectorsCacheCommand extends Command
@@ -42,6 +43,7 @@ class WarmSectorsCacheCommand extends Command
     public function handle(CachedSectorsService $sectorsService): int
     {
         $this->info('Memulai warm cache Sectors...');
+        Log::info('[WarmSectorsCacheCommand] Starting warm cache...');
 
         foreach ($this->popularTickers as $ticker) {
             $this->line("Fetching overview & financials: {$ticker}");
@@ -51,6 +53,7 @@ class WarmSectorsCacheCommand extends Command
                 $sectorsService->getQuarterlyFinancials($ticker, 12);
                 usleep(250000);
             } catch (\Throwable $e) {
+                Log::error("[WarmSectorsCacheCommand] Error fetching ticker {$ticker}: {$e->getMessage()}");
                 $this->error("Error {$ticker}: {$e->getMessage()}");
             }
         }
@@ -61,11 +64,14 @@ class WarmSectorsCacheCommand extends Command
                 $sectorsService->getSubsectorPeers($sub);
                 usleep(250000);
             } catch (\Throwable $e) {
+                Log::error("[WarmSectorsCacheCommand] Error fetching subsector {$sub}: {$e->getMessage()}");
                 $this->error("Error {$sub}: {$e->getMessage()}");
             }
         }
 
         $this->info('Selesai! Seluruh data utama telah tersimpan di api_caches.');
+        Log::info('[WarmSectorsCacheCommand] Finished warm cache successfully.');
+
         return Command::SUCCESS;
     }
 }

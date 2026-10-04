@@ -261,13 +261,13 @@
     <div class="doc-footer">
         <div class="footer-title">Disclaimer Regulasi &amp; Kepatuhan Pasar Modal</div>
         <div>
-            Analisis dan data di atas dihasilkan secara otomatis oleh Sectors Copilot AI Research Agent untuk
+            Analisis dan data di atas dihasilkan secara otomatis oleh SynthEX AI Research Agent untuk
             keperluan edukasi dan referensi riset semata. Informasi ini bukan merupakan rekomendasi, ajakan,
             atau paksaan untuk membeli atau menjual efek tertentu. Keputusan investasi sepenuhnya berada di
             tangan investor dengan mempertimbangkan profil risiko masing-masing.
         </div>
         <div style="margin-top: 6px;">
-            Generated automatically &middot; Sectors Copilot &middot; {{ $exportedAt->format('Y') }}
+            Generated automatically &middot; SynthEX &middot; {{ $exportedAt->format('Y') }}
         </div>
     </div>
 

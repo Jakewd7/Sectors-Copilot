@@ -1,7 +1,7 @@
 {
     "badge_title": "Indonesian Capital Market Financial Research Assistant",
     "hero_title": "Fundamental research on IDX stocks, in seconds",
-    "hero_desc": "Ask in plain language. Sectors Copilot pulls live financials, benchmarks peers across the sector, and assembles the valuation matrix — so your time goes into deciding, not digging through reports.",
+    "hero_desc": "Ask in plain language. SynthEX pulls live financials, benchmarks peers across the sector, and assembles the valuation matrix — so your time goes into deciding, not digging through reports.",
     "cta_button": "Start analyzing free",
     "cta_secondary": "See a live example",
     "topbar_button": "Get In Touch",
@@ -67,7 +67,7 @@
     "faq_badge": "FAQ",
     "faq_title": "The questions people ask first",
     "faq_1_q": "Is this investment advice?",
-    "faq_1_a": "No. Sectors Copilot is a research tool. Every output carries a compliance disclaimer and is meant to speed up analysis you would otherwise do yourself — not to replace your own judgement.",
+    "faq_1_a": "No. SynthEX is a research tool. Every output carries a compliance disclaimer and is meant to speed up analysis you would otherwise do yourself — not to replace your own judgement.",
     "faq_2_q": "Where does the market data come from?",
     "faq_2_a": "Market data is served from the Sectors API and cached per endpoint, so repeating a question does not consume additional quota. Editorial articles are written by our analyst desk.",
     "faq_3_q": "Can I ask in Indonesian?",
@@ -84,7 +84,7 @@
     "footer_faq": "FAQ",
     "footer_signin": "Sign in",
     "footer_rights": "All rights reserved.",
-    "footer_disclaimer": "Sectors Copilot is a financial research tool, not an investment advisor. Nothing on this page constitutes a recommendation to buy or sell any security. Market data is provided by a third-party API and may be delayed or incomplete. Always do your own due diligence.",
+    "footer_disclaimer": "SynthEX is a financial research tool, not an investment advisor. Nothing on this page constitutes a recommendation to buy or sell any security. Market data is provided by a third-party API and may be delayed or incomplete. Always do your own due diligence.",
 
     "footer_col_research": "Research",
     "footer_col_workspace": "Workspace",

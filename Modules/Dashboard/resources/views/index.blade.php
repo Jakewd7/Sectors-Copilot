@@ -24,7 +24,7 @@
             t: {
                 en: {
                     welcome: 'Welcome Back',
-                    proInvestor: 'Pro Investor',
+                    proInvestor: 'Investor',
                     subtitle: 'Real-Time Market Monitoring & Portfolio Telemetry System',
                     marketSentiment: 'Market Sentiment:',
                     bullishStatus: 'Strongly Bullish (78/100)',
@@ -55,7 +55,7 @@
                 },
                 id: {
                     welcome: 'Selamat Datang',
-                    proInvestor: 'Pro Investor',
+                    proInvestor: 'Investor',
                     subtitle: 'Sistem Pemantauan Pasar & Telemetri Portofolio Real-Time',
                     marketSentiment: 'Sentimen Pasar:',
                     bullishStatus: 'Sangat Bullish (78/100)',

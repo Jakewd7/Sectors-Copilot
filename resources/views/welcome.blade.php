@@ -51,7 +51,8 @@
                     <span class="size-2.5 rounded-full bg-border shrink-0"></span>
                     <span class="size-2.5 rounded-full bg-border shrink-0"></span>
                     <span class="size-2.5 rounded-full bg-border shrink-0"></span>
-                    <span class="ml-2 sm:ml-3 text-[10px] sm:text-[11px] font-mono text-text-muted truncate">{{ __('preview_url') }}</span>
+                    <span
+                        class="ml-2 sm:ml-3 text-[10px] sm:text-[11px] font-mono text-text-muted truncate">{{ __('preview_url') }}</span>
                 </div>
 
                 <div class="grid lg:grid-cols-[1.15fr_0.85fr]">
@@ -64,9 +65,10 @@
                         </div>
 
                         <div class="space-y-2.5 max-w-[95%]">
-                            <div class="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-accent">
+                            <div
+                                class="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-accent">
                                 <i data-lucide="bot" class="w-3.5 h-3.5"></i>
-                                <span>Sectors Copilot</span>
+                                <span>SynthEX</span>
                             </div>
                             <p class="text-[13px] text-text-primary leading-relaxed">
                                 {{ __('preview_answer') }}
@@ -119,7 +121,8 @@
         {{-- 3. PROBLEM -> SOLUTION --}}
         <section class="py-16 border-t border-border">
             <p class="text-[11px] font-bold uppercase tracking-[0.1em] text-text-muted">{{ __('problem_badge') }}</p>
-            <h2 class="text-xl sm:text-3xl font-bold text-text-primary tracking-tight mt-2.5 sm:mt-3 max-w-[22ch] leading-tight">
+            <h2
+                class="text-xl sm:text-3xl font-bold text-text-primary tracking-tight mt-2.5 sm:mt-3 max-w-[22ch] leading-tight">
                 {{ __('problem_title') }}
             </h2>
 
@@ -143,7 +146,8 @@
         {{-- 4. FEATURES (alternating, each with a UI visual) --}}
         <section id="capabilities" class="py-10 sm:py-16 border-t border-border scroll-mt-20">
             <p class="text-[11px] font-bold uppercase tracking-[0.1em] text-text-muted">{{ __('features_badge') }}</p>
-            <h2 class="text-xl sm:text-3xl font-bold text-text-primary tracking-tight mt-2.5 sm:mt-3 max-w-[22ch] leading-tight">
+            <h2
+                class="text-xl sm:text-3xl font-bold text-text-primary tracking-tight mt-2.5 sm:mt-3 max-w-[22ch] leading-tight">
                 {{ __('features_title') }}
             </h2>
 
@@ -162,7 +166,8 @@
                             @endforeach
                         </ul>
 
-                        <p class="mt-5 p-3.5 bg-base/60 border border-border rounded-xl text-[12.5px] text-text-muted leading-relaxed">
+                        <p
+                            class="mt-5 p-3.5 bg-base/60 border border-border rounded-xl text-[12.5px] text-text-muted leading-relaxed">
                             {{ __('feature_1_example') }}
                         </p>
                     </div>
@@ -207,13 +212,15 @@
                             @endforeach
                         </ul>
 
-                        <p class="mt-5 p-3.5 bg-base/60 border border-border rounded-xl text-[12.5px] text-text-muted leading-relaxed">
+                        <p
+                            class="mt-5 p-3.5 bg-base/60 border border-border rounded-xl text-[12.5px] text-text-muted leading-relaxed">
                             {{ __('feature_2_example') }}
                         </p>
                     </div>
 
                     <div class="lg:order-1 bg-surface border border-border rounded-2xl p-5 shadow-xl shadow-black/20">
-                        <div class="flex items-center justify-between text-[11px] pb-2.5 border-b border-border text-text-muted">
+                        <div
+                            class="flex items-center justify-between text-[11px] pb-2.5 border-b border-border text-text-muted">
                             <span>Ticker</span>
                             <span class="flex gap-6">
                                 <span>PER</span>
@@ -250,7 +257,8 @@
                             @endforeach
                         </ul>
 
-                        <p class="mt-5 p-3.5 bg-base/60 border border-border rounded-xl text-[12.5px] text-text-muted leading-relaxed">
+                        <p
+                            class="mt-5 p-3.5 bg-base/60 border border-border rounded-xl text-[12.5px] text-text-muted leading-relaxed">
                             {{ __('feature_3_example') }}
                         </p>
                     </div>
@@ -276,7 +284,8 @@
         {{-- 5. WORKSPACE --}}
         <section class="py-16 border-t border-border">
             <p class="text-[11px] font-bold uppercase tracking-[0.1em] text-text-muted">{{ __('workspace_badge') }}</p>
-            <h2 class="text-xl sm:text-3xl font-bold text-text-primary tracking-tight mt-2.5 sm:mt-3 max-w-[22ch] leading-tight">
+            <h2
+                class="text-xl sm:text-3xl font-bold text-text-primary tracking-tight mt-2.5 sm:mt-3 max-w-[22ch] leading-tight">
                 {{ __('workspace_title') }}
             </h2>
 
@@ -352,7 +361,8 @@
         {{-- 7. FAQ --}}
         <section id="faq" class="py-10 sm:py-16 border-t border-border scroll-mt-20">
             <p class="text-[11px] font-bold uppercase tracking-[0.1em] text-text-muted">{{ __('faq_badge') }}</p>
-            <h2 class="text-xl sm:text-3xl font-bold text-text-primary tracking-tight mt-2.5 sm:mt-3 max-w-[22ch] leading-tight">
+            <h2
+                class="text-xl sm:text-3xl font-bold text-text-primary tracking-tight mt-2.5 sm:mt-3 max-w-[22ch] leading-tight">
                 {{ __('faq_title') }}
             </h2>
 

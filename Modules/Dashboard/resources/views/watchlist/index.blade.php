@@ -428,7 +428,7 @@
                 </div>
                 <h2 class="text-base font-bold text-text-primary mt-4">This watchlist is empty</h2>
                 <p class="text-xs text-text-muted mt-2 max-w-md mx-auto leading-relaxed">
-                    Add the companies you want to follow and Sectors Copilot keeps their fundamentals,
+                    Add the companies you want to follow and SynthEX keeps their fundamentals,
                     valuation and daily movement in one place.
                 </p>
 

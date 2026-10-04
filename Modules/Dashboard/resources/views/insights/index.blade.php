@@ -3,7 +3,7 @@
         @include('dashboard::insights._listing')
     </x-app-shell>
 @else
-    <x-public-shell title="Market Insights" description="Market research and analysis from the Sectors Copilot desk.">
+    <x-public-shell title="Market Insights" description="Market research and analysis from the SynthEX desk.">
         @include('dashboard::insights._listing')
     </x-public-shell>
 @endauth
